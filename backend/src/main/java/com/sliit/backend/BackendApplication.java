@@ -15,7 +15,7 @@ public class BackendApplication {
 
 	@GetMapping("/")
 	public String rootEndpoint() {
-		String message = "Hello World!";
+		String message = "Hello World.!";
 		return message;
 	}
 }
