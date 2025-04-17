@@ -1,5 +1,6 @@
 package com.sliit.backend;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +25,7 @@ public class commentcontroller {
     // POST: Create a new Comment
     @PostMapping
     public comment createComment(@RequestBody comment newComment) {
+        newComment.setTimestamp(new Date()); //Automatically set the timestamp
         return commentService.createComment(newComment);
     }
 
