@@ -5,6 +5,7 @@ import com.sliit.backend.repositories.LearningProgressRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +20,7 @@ public class LearningProgressService {
     }
 
     public LearningProgress createLearningProgress(LearningProgress learningProgress) {
+        learningProgress.setCreatedAt(new Date());
         return learningProgressRepository.save(learningProgress);
     }
 
@@ -33,10 +35,12 @@ public class LearningProgressService {
     public Optional<LearningProgress> updateLearningProgress(String id, LearningProgress updatedLearningProgress) {
         return learningProgressRepository.findById(id).map(existing -> {
             existing.setUserId(updatedLearningProgress.getUserId());
+            existing.setProgressName(updatedLearningProgress.getProgressName());
             existing.setNewSkills(updatedLearningProgress.getNewSkills());
             existing.setTitle(updatedLearningProgress.getTitle());
             existing.setDescription(updatedLearningProgress.getDescription());
-            existing.setTutorials(updatedLearningProgress.getTutorials());
+            existing.setResources(updatedLearningProgress.getResources());
+            existing.setProgressPercentage(updatedLearningProgress.getProgressPercentage());
             return learningProgressRepository.save(existing);
         });
     }

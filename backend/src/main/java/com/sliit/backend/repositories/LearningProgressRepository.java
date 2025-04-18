@@ -10,4 +10,5 @@ import java.util.List;
 @Repository
 public interface LearningProgressRepository extends MongoRepository<LearningProgress, String> {
     List<LearningProgress> findByUserId(String userId);
+    List<LearningProgress> findByProgressNameOrderByCreatedAtDesc(String progressName);
 }
