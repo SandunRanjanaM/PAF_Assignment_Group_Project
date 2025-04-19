@@ -33,6 +33,13 @@ public class LearningPlanController {
         return new ResponseEntity<>(plans, HttpStatus.OK);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<LearningPlan> getLearningPlanById(@PathVariable String id) {
+        Optional<LearningPlan> plan = learningPlanService.getLearningPlanById(id);
+        return plan.map(ResponseEntity::ok)
+               .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
     @GetMapping("/{userId}/{progressName}")
     public ResponseEntity<List<LearningPlan>> getLearningPlansByUserIdAndProgressName(@PathVariable String userId, @PathVariable String progressName) {
         List<LearningPlan> plans = learningPlanService.getLearningPlansByUserIdAndProgressName(userId, progressName);

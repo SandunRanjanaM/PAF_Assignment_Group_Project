@@ -34,6 +34,10 @@ public class LearningPlanService {
         return learningPlanRepository.findAll();
     }
 
+    public Optional<LearningPlan> getLearningPlanById(String id) {
+        return learningPlanRepository.findById(id);
+    }    
+
     public List<LearningPlan> getLearningPlansByUserIdAndProgressName(String userId, String progressName) {
         return learningPlanRepository.findByUserIdAndProgressName(userId, progressName);
     }
