@@ -1,22 +1,70 @@
 package com.sliit.backend;
 
-import com.sliit.backend.comment;
-import com.sliit.backend.commentRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+
+import org.bson.Document;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.stereotype.Service;
 
 @Service
 public class commentService {
 
     @Autowired
+    private notificationRepository notificationRepository;
+    
+
+    @Autowired
     private commentRepository commentRepository;
 
-    // Create a comment
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
+
     public comment createComment(comment newComment) {
-        return commentRepository.save(newComment);
+        newComment.setTimestamp(new Date());
+        comment savedComment = commentRepository.save(newComment);
+    
+        // Update the Post document to add comment ID
+        mongoTemplate.updateFirst(
+            Query.query(Criteria.where("_id").is(newComment.getPostId())),
+            new Update().push("commentIds", savedComment.getId()),
+            "posts"
+        );
+    
+        // Fetch Post owner
+        Document postDoc = mongoTemplate.findOne(
+            Query.query(Criteria.where("_id").is(newComment.getPostId())),
+            Document.class,
+            "posts"
+        );
+    
+        String recipientId; 
+        if (postDoc != null) {
+             recipientId = postDoc.getString("userId"); // post owner's ID
+    
+        }
+        else{
+            // 👇 TEMP fallback receiverUserId just to test notification creation
+            recipientId = "12345";
+        }
+            // Create and save notification
+            Notification notification = new Notification(
+            "Someone commented on your post!",
+            newComment.getPostId(),
+            recipientId,
+            newComment.getUserId()
+        );
+    
+            notificationRepository.save(notification);
+        
+    
+        return savedComment;
     }
 
     // Get all comments
@@ -46,6 +94,7 @@ public class commentService {
     }
 
     // Get comments by post ID
+    
     public List<comment> getCommentsByPostId(String postId) {
         return commentRepository.findByPostId(postId);
     }
