@@ -52,6 +52,19 @@
 			<version>2.5.4</version>
 		</dependency>
 
+		<dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.30</version> 
+            <scope>provided</scope>
+        </dependency>
+
+		<dependency>
+            <groupId>com.cloudinary</groupId>
+            <artifactId>cloudinary-http44</artifactId>
+            <version>1.37.0</version>
+        </dependency>
+
 	</dependencies>
 
 	<build>
