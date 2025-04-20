@@ -1,21 +1,19 @@
-package com.sliit.backend;
- 
+package com.sliit.backend.config;
+
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
- 
-//import java.util.Map;
- 
+
 @Configuration
 public class CloudinaryConfig {
- 
+
     @Bean
     public Cloudinary cloudinary() {
         return new Cloudinary(ObjectUtils.asMap(
-            "cloud_name", "dqnrdlpcn",
-            "api_key", "946169137896348",
-            "api_secret", "37J71jcETqxIl6AfFMeh0xXgdZE"
+                "cloud_name", "dz2kgputl",
+                "api_key", "645982481859273",
+                "api_secret", "VX8xD5hVCRY4qWIR8Bg0ial4BJw"
         ));
     }
 }
