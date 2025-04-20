@@ -14,6 +14,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/users")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class UserController {
 
     @Autowired
@@ -30,12 +31,16 @@ public class UserController {
 
     // GET single user by ID
     @GetMapping("/{id}")
-    public ResponseEntity<Optional<User>> getSingleUser(@PathVariable String id) {
-        return new ResponseEntity<>(service.findUserById(id), HttpStatus.OK);
+    public ResponseEntity<?> getSingleUser(@PathVariable String id) {
+        Optional<User> user = service.findUserById(id);
+        if (user.isPresent()) {
+            return new ResponseEntity<>(user.get(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
+        }
     }
 
     // CREATE user with profile picture upload
-    @SuppressWarnings("null")
     @PostMapping(consumes = {"multipart/form-data"})
     public ResponseEntity<User> createUser(
             @RequestPart("user") String userString,
@@ -55,6 +60,7 @@ public class UserController {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
     // UPDATE user
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable String id, @RequestBody User user) {
@@ -71,4 +77,22 @@ public class UserController {
         service.deleteUser(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    // LOGIN user
+    @PostMapping("/login")
+    public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest) {
+        User user = service.findUserByEmail(loginRequest.getEmail());
+
+        if (user == null) {
+            return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
+        }
+
+        if (!user.getPassword().equals(loginRequest.getPassword())) {
+            return new ResponseEntity<>("Invalid credentials", HttpStatus.UNAUTHORIZED);
+        }
+
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+    
+
 }

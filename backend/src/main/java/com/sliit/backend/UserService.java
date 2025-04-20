@@ -1,6 +1,5 @@
 package com.sliit.backend;
 
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +16,8 @@ public class UserService {
         return repository.findAll();
     }
 
-    public Optional<User> findUserById(String userID) {
-        return repository.findById(userID);
+    public Optional<User> findUserById(String id) {
+        return repository.findById(id);
     }
 
     public User createUser(User user) {
@@ -38,8 +37,15 @@ public class UserService {
         }).orElse(null);
     }
 
-    // DELETE
-    public void deleteUser(String userID) {
-        repository.deleteById(new ObjectId(userID));
+    public void deleteUser(String id) {
+        repository.deleteById(id);
     }
+
+    public User findUserByEmail(String email) {
+        return repository.findByEmail(email).orElse(null);
+    }
+
+    
+
+    
 }
