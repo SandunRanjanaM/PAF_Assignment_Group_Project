@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -21,10 +22,27 @@ public class LearningProgressController {
 
     @PostMapping
     public ResponseEntity<LearningProgress> createLearningProgress(@RequestBody LearningProgress learningProgress) {
-        
-        learningProgress.calculateProgressPercentage();
-        LearningProgress saved = learningProgressService.createLearningProgress(learningProgress);
-        return new ResponseEntity<>(saved, HttpStatus.CREATED);
+
+    List<LearningProgress> existingProgress = learningProgressService.getLearningProgressByUserIdAndProgressName(
+            learningProgress.getUserId(), learningProgress.getProgressName());
+
+    
+    if (!existingProgress.isEmpty()) {
+        return new ResponseEntity<>(HttpStatus.CONFLICT); 
+    }
+
+    LearningProgress saved = learningProgressService.createLearningProgress(learningProgress);
+    return new ResponseEntity<>(saved, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/check-duplicate")
+    public ResponseEntity<?> checkDuplicateProgress(
+            @RequestParam String userId,
+            @RequestParam String progressName) {
+
+        List<LearningProgress> existing = learningProgressService.getLearningProgressByUserIdAndProgressName(userId, progressName);
+        boolean exists = !existing.isEmpty();
+        return ResponseEntity.ok().body(Map.of("exists", exists));
     }
 
     @GetMapping

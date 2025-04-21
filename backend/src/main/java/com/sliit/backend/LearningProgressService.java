@@ -32,6 +32,10 @@ public class LearningProgressService {
         return learningProgressRepository.findByUserId(userId);
     }
 
+    public List<LearningProgress> getLearningProgressByUserIdAndProgressName(String userId, String progressName) {
+        return learningProgressRepository.findByUserIdAndProgressName(userId, progressName);
+    }    
+
     public Optional<LearningProgress> updateLearningProgress(String id, LearningProgress updatedLearningProgress) {
         return learningProgressRepository.findById(id).map(existing -> {
 
