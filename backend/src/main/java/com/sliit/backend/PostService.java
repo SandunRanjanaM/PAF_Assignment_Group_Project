@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 //import java.util.stream.Collectors;
+import java.util.stream.Collectors;
 
 @Service
 public class PostService {
@@ -90,5 +91,20 @@ public class PostService {
         }
     
     }
+
+    // 6. Search posts from hashtags
+    public List<Post> getPostsByHashtag(String hashtag) {
+        String tag = hashtag.toLowerCase();
+        return postRepository.findAll().stream()
+            .filter(post -> {
+                String desc = post.getDescription();
+                return desc != null &&
+                       (desc.toLowerCase().contains("#" + tag) ||
+                        desc.toLowerCase().contains(tag));
+            })
+            .collect(Collectors.toList());
+    }
+    
+
 }
 
