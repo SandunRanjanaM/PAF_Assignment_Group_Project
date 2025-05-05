@@ -1,6 +1,6 @@
 import axios from '../api/axiosConfig';
 
-const BASE_URL = '/posts';
+const BASE_URL = '/api/posts';
 
 // 1. Create a new post (with media)
 const createPost = (formData) => {
