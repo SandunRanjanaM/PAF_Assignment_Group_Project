@@ -20,16 +20,23 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CommentIcon from "@mui/icons-material/Comment";
+import Avatar from "@mui/material/Avatar";
+import { useNavigate } from "react-router-dom";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import FolderIcon from "@mui/icons-material/Folder"
+import { green } from "@mui/material/colors";
 //import IconButton from '@mui/material/IconButton';
 
 const PostList = () => {
   const [posts, setPosts] = useState([]);
   const [mediaIndexMap, setMediaIndexMap] = useState({});
-
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [currentPostId, setCurrentPostId] = useState(null);
   const [editedDescription, setEditedDescription] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
+  const [likedPosts, setLikedPosts] = useState({});
 
   useEffect(() => {
     PostService.getAllPosts()
@@ -125,12 +132,37 @@ const PostList = () => {
           />
           <Button
             variant="contained"
-            sx={{ backgroundColor: '#ef5350', color: 'white', '&:hover': { backgroundColor: '#c62828' } }}
+            sx={{
+              backgroundColor: "#ef5350",
+              color: "white",
+              "&:hover": { backgroundColor: "#c62828" },
+            }}
             onClick={handleSearch}
           >
             Search
           </Button>
         </Box>
+        <Card
+          variant="outlined"
+          onClick={() => navigate("/posts/create")}
+          sx={{
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            padding: 2,
+            borderRadius: 3,
+            backgroundColor: "#fafafa",
+            "&:hover": {
+              backgroundColor: "#f0f0f0",
+            },
+            mb: 3,
+          }}
+        >
+          <Avatar sx={{ mr: 2, bgcolor: green[500] }} >
+            <FolderIcon/>
+          </Avatar>
+          <Typography color="text.secondary">Create a new post</Typography>
+        </Card>
         <Stack spacing={4}>
           {posts.map((post) => (
             <Card key={post.id} elevation={3} sx={{ borderRadius: 3 }}>
@@ -200,7 +232,20 @@ const PostList = () => {
                 <Typography variant="body1" sx={{ mb: 1 }}>
                   {post.description}
                 </Typography>
-
+                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                  <IconButton
+                    onClick={() =>
+                      setPosts((prevPosts) =>
+                        prevPosts.map((p) =>
+                          p.id === post.id ? { ...p, liked: !p.liked } : p
+                        )
+                      )
+                    }
+                    color={post.liked ? "error" : "default"}
+                  >
+                    <FavoriteIcon />
+                  </IconButton>
+                </Box>
                 <Box
                   sx={{
                     display: "flex",
