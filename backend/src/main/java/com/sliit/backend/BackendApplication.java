@@ -17,5 +17,6 @@ public class BackendApplication {
     public String rootEndpoint() {
         String message = "Hello World!";
         return message;
+
     }
 }
