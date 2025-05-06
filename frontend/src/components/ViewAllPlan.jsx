@@ -16,12 +16,16 @@ import {
   ListItemIcon,
   ListItemText,
   Avatar,
+  LinearProgress,
+  CircularProgress,
+  Button,
 } from '@mui/material';
 import {
   Delete as DeleteIcon,
   AccessTime,
   PriorityHigh,
   ArrowForwardIos as ArrowIcon,
+  CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
 import LearningPlanService from '../services/LearningPlanService';
 
@@ -62,6 +66,19 @@ const ViewAllPlan = () => {
         console.error('Error deleting plan:', error);
       }
     }
+  };
+
+  const calculateTaskProgress = (task) => {
+    if (!task.steps || task.steps.length === 0) return 0;
+    const completedSteps = task.steps.filter(step => step.checked).length;
+    return (completedSteps / task.steps.length) * 100;
+  };
+
+  const getProgressColor = (percentage) => {
+    if (percentage >= 80) return '#4caf50'; // Green
+    if (percentage >= 50) return '#2196f3'; // Blue
+    if (percentage >= 20) return '#ff9800'; // Orange
+    return '#f44336'; // Red
   };
 
   return (
@@ -125,21 +142,135 @@ const ViewAllPlan = () => {
                   {/* Iterate over tasks */}
                   {plan.tasks?.length > 0 ? (
                     plan.tasks.map((task, taskIndex) => (
-                      <Box key={taskIndex} sx={{ mb: 2 }}>
-                        <Typography variant="body1" fontWeight={600}>
-                          {task.title}
-                        </Typography>
+                      <Box key={taskIndex} sx={{ mb: 3, p: 2, border: '1px solid #e0e0e0', borderRadius: 2, bgcolor: '#fafafa' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                          <Typography variant="body1" fontWeight={600}>
+                            {task.title}
+                          </Typography>
+                          <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+                            <CircularProgress
+                              variant="determinate"
+                              value={calculateTaskProgress(task)}
+                              size={60}
+                              thickness={4}
+                              sx={{
+                                color: getProgressColor(calculateTaskProgress(task)),
+                                '& .MuiCircularProgress-circle': {
+                                  strokeLinecap: 'round',
+                                },
+                              }}
+                            />
+                            <Box
+                              sx={{
+                                top: 0,
+                                left: 0,
+                                bottom: 0,
+                                right: 0,
+                                position: 'absolute',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <Typography variant="caption" component="div" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                                {`${Math.round(calculateTaskProgress(task))}%`}
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </Box>
+
+                        <Box sx={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          mb: 2,
+                          bgcolor: 'white',
+                          p: 1,
+                          borderRadius: 1,
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                        }}>
+                          <LinearProgress
+                            variant="determinate"
+                            value={calculateTaskProgress(task)}
+                            sx={{
+                              height: 8,
+                              borderRadius: 4,
+                              width: '100%',
+                              backgroundColor: '#e0e0e0',
+                              '& .MuiLinearProgress-bar': {
+                                backgroundColor: getProgressColor(calculateTaskProgress(task)),
+                                borderRadius: 4,
+                              },
+                            }}
+                          />
+                        </Box>
 
                         <List dense disablePadding>
                           {task.steps?.map((step, stepIndex) => (
                             <React.Fragment key={stepIndex}>
-                              <ListItem sx={{ pl: 0 }}>
-                                <ListItemIcon>
-                                  <Avatar sx={{ bgcolor: step.checked ? 'green' : 'gray', width: 24, height: 24, fontSize: 12 }}>
-                                    {stepIndex + 1}
-                                  </Avatar>
-                                </ListItemIcon>
-                                <ListItemText primary={step.name} />
+                              <ListItem 
+                                sx={{ 
+                                  pl: 0,
+                                  bgcolor: 'white',
+                                  borderRadius: 1,
+                                  mb: 0.5,
+                                  transition: 'all 0.2s',
+                                  '&:hover': {
+                                    bgcolor: '#f5f5f5',
+                                  },
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  pr: 1
+                                }}
+                              >
+                                <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                                  <ListItemIcon>
+                                    <Avatar 
+                                      sx={{ 
+                                        bgcolor: step.checked ? getProgressColor(100) : '#e0e0e0',
+                                        width: 28,
+                                        height: 28,
+                                        fontSize: 14,
+                                        transition: 'all 0.2s',
+                                        boxShadow: step.checked ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'
+                                      }}
+                                    >
+                                      {stepIndex + 1}
+                                    </Avatar>
+                                  </ListItemIcon>
+                                  <ListItemText 
+                                    primary={step.name}
+                                    primaryTypographyProps={{
+                                      sx: {
+                                        color: step.checked ? 'text.secondary' : 'text.primary',
+                                        transition: 'all 0.2s',
+                                        wordBreak: 'break-word',
+                                        whiteSpace: 'pre-wrap',
+                                        opacity: step.checked ? 0.8 : 1
+                                      }
+                                    }}
+                                  />
+                                </Box>
+                                {step.checked && (
+                                  <Chip
+                                    icon={<CheckCircleIcon />}
+                                    label="Done"
+                                    size="small"
+                                    sx={{
+                                      bgcolor: getProgressColor(100),
+                                      color: 'white',
+                                      '& .MuiChip-icon': {
+                                        color: 'white'
+                                      },
+                                      ml: 1,
+                                      transition: 'all 0.2s',
+                                      '&:hover': {
+                                        bgcolor: getProgressColor(100),
+                                        opacity: 0.9
+                                      }
+                                    }}
+                                  />
+                                )}
                               </ListItem>
                               {stepIndex < task.steps.length - 1 && (
                                 <Box display="flex" justifyContent="center" py={0.5}>

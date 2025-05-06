@@ -226,20 +226,6 @@ const UpdateLearningProgress = () => {
                   justifyContent="space-between"
                   mb={1}
                 >
-                  <Tooltip
-                    title={
-                      task.isExisting && task.wasCheckedInitially
-                        ? 'Existing completed tasks cannot be unchecked'
-                        : ''
-                    }
-                  >
-                    <Checkbox
-                      checked={task.completed}
-                      onChange={() => handleTaskToggle(index)}
-                      disabled={task.isExisting && task.wasCheckedInitially}
-                    />
-                  </Tooltip>
-
                   <TextField
                     value={task.title}
                     onChange={(e) => handleTaskTitleChange(index, e.target.value)}
@@ -247,7 +233,6 @@ const UpdateLearningProgress = () => {
                     size="small"
                     sx={{ flexGrow: 1, mx: 1 }}
                   />
-
                   <Tooltip title="Delete task">
                     <IconButton
                       size="small"

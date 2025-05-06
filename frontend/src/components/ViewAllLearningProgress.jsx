@@ -48,7 +48,6 @@ const ViewAllLearningProgress = () => {
     try {
       const progressResponse = await LearningProgressService.getAllProgresses();
       const allProgresses = progressResponse.data;
-      setProgresses(allProgresses);
 
       const planResponse = await LearningPlanService.getAllPlans();
       const planMap = {};
@@ -56,6 +55,45 @@ const ViewAllLearningProgress = () => {
         const key = `${plan.userId}_${plan.progressName}`;
         planMap[key] = plan;
       });
+
+      const updatedProgresses = allProgresses.map(progress => {
+        const key = `${progress.userId}_${progress.progressName}`;
+        const plan = planMap[key];
+
+        if (plan && plan.tasks) {
+          // Update task completion status based on plan steps
+          const updatedTasks = progress.tasks.map(task => {
+            // Robust matching: case-insensitive, trimmed
+            const planTask = plan.tasks.find(
+              pt => pt.title.trim().toLowerCase() === task.title.trim().toLowerCase()
+            );
+            if (planTask && Array.isArray(planTask.steps) && planTask.steps.length > 0) {
+              const allStepsCompleted = planTask.steps.every(step => step.checked);
+              return {
+                ...task,
+                completed: allStepsCompleted
+              };
+            }
+            // If no steps, consider not completed (or set to true if you want)
+            return { ...task, completed: false };
+          });
+
+          // Calculate new progress percentage
+          const completedTasks = updatedTasks.filter(task => task.completed).length;
+          const progressPercentage = updatedTasks.length > 0 
+            ? Math.round((completedTasks / updatedTasks.length) * 100)
+            : 0;
+
+          return {
+            ...progress,
+            tasks: updatedTasks,
+            progressPercentage
+          };
+        }
+        return progress;
+      });
+
+      setProgresses(updatedProgresses);
       setPlansMap(planMap);
     } catch (error) {
       console.error('Error fetching progresses or plans:', error);

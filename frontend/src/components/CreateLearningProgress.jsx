@@ -185,12 +185,12 @@ const CreateLearningProgress = () => {
           ))}
         </Box>
 
-        <Box sx={{ mt: 3 }}>
+        {/* <Box sx={{ mt: 3 }}>
           <Typography variant="body1" gutterBottom>
             Progress: {formData.progressPercentage}%
           </Typography>
           <LinearProgress variant="determinate" value={formData.progressPercentage} />
-        </Box>
+        </Box> */}
 
         <Button
           type="submit"

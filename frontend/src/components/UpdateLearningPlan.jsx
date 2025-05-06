@@ -7,6 +7,8 @@ import {
   Box,
   MenuItem,
   IconButton,
+  Checkbox,
+  LinearProgress,
 } from '@mui/material';
 import { RemoveCircle, AddCircle } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -106,6 +108,24 @@ const UpdateLearningPlan = () => {
     const newTasks = [...planData.tasks];
     newTasks[taskIndex].steps.splice(stepIndex, 1);
     setPlanData(prev => ({ ...prev, tasks: newTasks }));
+  };
+
+  const handleStepCheck = (taskIndex, stepIndex, checked) => {
+    const newTasks = [...planData.tasks];
+    newTasks[taskIndex].steps[stepIndex].checked = checked;
+    
+    // Calculate task completion based on steps
+    const taskSteps = newTasks[taskIndex].steps;
+    const completedSteps = taskSteps.filter(step => step.checked).length;
+    newTasks[taskIndex].completed = completedSteps === taskSteps.length;
+    
+    setPlanData(prev => ({ ...prev, tasks: newTasks }));
+  };
+
+  const calculateTaskProgress = (task) => {
+    if (!task.steps || task.steps.length === 0) return 0;
+    const completedSteps = task.steps.filter(step => step.checked).length;
+    return (completedSteps / task.steps.length) * 100;
   };
 
   const validate = () => {
@@ -209,12 +229,27 @@ const UpdateLearningPlan = () => {
             InputProps={{ readOnly: true }}
           />
 
+          <Box sx={{ mt: 1, mb: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              Progress: {calculateTaskProgress(task).toFixed(0)}%
+            </Typography>
+            <LinearProgress 
+              variant="determinate" 
+              value={calculateTaskProgress(task)} 
+              sx={{ mt: 0.5 }}
+            />
+          </Box>
+
           <Typography variant="subtitle2" sx={{ mb: 1 }}>
             Steps
           </Typography>
 
           {task.steps.map((step, stepIndex) => (
             <Box key={stepIndex} display="flex" alignItems="center" gap={1} mt={1}>
+              <Checkbox
+                checked={step.checked || false}
+                onChange={(e) => handleStepCheck(taskIndex, stepIndex, e.target.checked)}
+              />
               <TextField
                 label={`Step ${stepIndex + 1}`}
                 value={step.name}
