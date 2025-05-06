@@ -11,7 +11,7 @@ import {
 import { RemoveCircle, AddCircle } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
 import LearningPlanService from '../services/LearningPlanService';
-import axios from 'axios'; // Direct API call to LearningProgress
+import LearningProgressService from '../services/LearningProgressService';
 
 const UpdateLearningPlan = () => {
   const { id, userId, progressName } = useParams();
@@ -45,17 +45,33 @@ const UpdateLearningPlan = () => {
 
         // Fetch progress tasks and ensure they are passed to prefill plan if needed
         if (plan.userId && plan.progressName) {
-          const progressResponse = await axios.get(`/api/LearningProgress/${plan.userId}/${plan.progressName}/latest`);
-          const progress = progressResponse.data;
-          setProgressTasks(progress.tasks || []);
+          const progressResponse = await LearningProgressService.getAllProgresses();
+          const progress = progressResponse.data.find(
+            p => p.userId === plan.userId && p.progressName === plan.progressName
+          );
           
-          // If plan.tasks is empty, prefill from progressTasks
-          if (plan.tasks.length === 0 && progress.tasks) {
-            const prefilledTasks = progress.tasks.map(task => ({
-              title: task.title,
-              steps: [], // Allow user to define steps
-            }));
-            setPlanData(prev => ({ ...prev, tasks: prefilledTasks }));
+          if (progress && progress.tasks) {
+            setProgressTasks(progress.tasks);
+            
+            // If plan.tasks is empty or missing some tasks from progress, update it
+            const progressTaskTitles = progress.tasks.map(t => t.title);
+            const existingTaskTitles = plan.tasks.map(t => t.title);
+            
+            // Add missing tasks from progress
+            const missingTasks = progress.tasks
+              .filter(pt => !existingTaskTitles.includes(pt.title))
+              .map(pt => ({
+                title: pt.title,
+                completed: pt.completed,
+                steps: []
+              }));
+
+            if (missingTasks.length > 0) {
+              setPlanData(prev => ({
+                ...prev,
+                tasks: [...prev.tasks, ...missingTasks]
+              }));
+            }
           }
         }
       } catch (error) {
