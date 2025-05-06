@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import LearningPlanService from '../services/LearningPlanService';
+import LearningProgressService from '../services/LearningProgressService';
 
 const useQuery = () => new URLSearchParams(useLocation().search);
 
@@ -27,34 +28,57 @@ const CreateLearningPlan = () => {
     progressName,
     title: '',
     description: '',
-    steps: [],
-    stepInput: '',
     durationValue: '',
     durationUnit: 'days',
     priority: 'Medium',
   });
 
+  const [tasksWithSteps, setTasksWithSteps] = useState([]);
   const [existingPlan, setExistingPlan] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [newStepInputs, setNewStepInputs] = useState({}); // temp storage for step input values
 
+  // Fetch existing plan and tasks from LearningProgress
   useEffect(() => {
-    const checkExistingPlan = async () => {
+    const init = async () => {
       try {
-        const response = await LearningPlanService.getAllPlans();
-        const matchedPlan = response.data.find(
+        const plansResponse = await LearningPlanService.getAllPlans();
+        const matchedPlan = plansResponse.data.find(
           (plan) => plan.userId === userId && plan.progressName === progressName
         );
         if (matchedPlan) {
           setExistingPlan(matchedPlan);
+          return;
+        }
+
+        const progressesResponse = await LearningProgressService.getAllProgresses();
+        const matchedProgress = progressesResponse.data.find(
+          (p) => p.userId === userId && p.progressName === progressName
+        );
+
+        if (matchedProgress && matchedProgress.tasks) {
+          const tasks = matchedProgress.tasks.map((task) => ({
+            title: task.title,
+            completed: false,
+            steps: task.steps || [], // initialize with steps if any
+          }));
+          setTasksWithSteps(tasks);
+
+          // Initialize newStepInputs for each task
+          const inputState = {};
+          tasks.forEach((task) => {
+            inputState[task.title] = ''; // default step input as empty
+          });
+          setNewStepInputs(inputState);
         }
       } catch (error) {
-        console.error('Error checking existing plan:', error);
+        console.error('Error initializing plan:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    checkExistingPlan();
+    init();
   }, [userId, progressName]);
 
   const handleChange = (e) => {
@@ -62,22 +86,33 @@ const CreateLearningPlan = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAddStep = () => {
-    const trimmed = formData.stepInput.trim();
-    if (trimmed && !formData.steps.includes(trimmed)) {
-      setFormData((prev) => ({
-        ...prev,
-        steps: [...prev.steps, trimmed],
-        stepInput: '',
-      }));
-    }
+  const handleStepInputChange = (taskTitle, value) => {
+    setNewStepInputs((prev) => ({ ...prev, [taskTitle]: value }));
   };
 
-  const handleRemoveStep = (index) => {
-    setFormData((prev) => ({
-      ...prev,
-      steps: prev.steps.filter((_, i) => i !== index),
-    }));
+  const handleAddStep = (taskTitle) => {
+    const trimmedStep = newStepInputs[taskTitle]?.trim();
+    if (!trimmedStep) return;
+
+    setTasksWithSteps((prev) =>
+      prev.map((task) =>
+        task.title === taskTitle && !task.steps.includes(trimmedStep)
+          ? { ...task, steps: [...task.steps, { name: trimmedStep, checked: false }] }
+          : task
+      )
+    );
+
+    setNewStepInputs((prev) => ({ ...prev, [taskTitle]: '' }));
+  };
+
+  const handleRemoveStep = (taskTitle, index) => {
+    setTasksWithSteps((prev) =>
+      prev.map((task) =>
+        task.title === taskTitle
+          ? { ...task, steps: task.steps.filter((_, i) => i !== index) }
+          : task
+      )
+    );
   };
 
   const handleSubmit = async (e) => {
@@ -86,6 +121,7 @@ const CreateLearningPlan = () => {
     const planData = {
       ...formData,
       durationValue: parseInt(formData.durationValue),
+      tasks: tasksWithSteps,
     };
 
     try {
@@ -94,14 +130,12 @@ const CreateLearningPlan = () => {
       navigate('/view-all-plans');
     } catch (error) {
       console.error('Error creating plan:', error);
-      alert('Failed to create learning plan.');
+      alert('Failed to create learning plan. Please check console for more details.');
     }
   };
 
   const handleRedirectToUpdate = () => {
-    navigate(
-      `/progresses`
-    );
+    navigate(`/progresses`);
   };
 
   if (loading) return <Typography>Loading...</Typography>;
@@ -159,35 +193,40 @@ const CreateLearningPlan = () => {
             value={formData.description}
             onChange={handleChange}
             multiline
-            rows={4}
+            rows={3}
             required
             sx={{ mb: 2 }}
           />
 
-          {/* Step Input */}
-          <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-            <TextField
-              label="Add Step"
-              name="stepInput"
-              value={formData.stepInput}
-              onChange={handleChange}
-              fullWidth
-            />
-            <Button variant="contained" onClick={handleAddStep}>
-              Add
-            </Button>
-          </Stack>
+          {/* Tasks & Steps */}
+          {tasksWithSteps.map((task, taskIdx) => (
+            <Box key={taskIdx} sx={{ mb: 3, p: 2, border: '1px solid #ccc', borderRadius: 2 }}>
+              <Typography variant="h6">{task.title}</Typography>
 
-          <Box sx={{ mb: 2 }}>
-            {formData.steps.map((step, index) => (
-              <Chip
-                key={index}
-                label={step}
-                onDelete={() => handleRemoveStep(index)}
-                sx={{ mr: 1, mb: 1 }}
-              />
-            ))}
-          </Box>
+              <Stack direction="row" spacing={1} sx={{ my: 1 }}>
+                <TextField
+                  label="Add Step"
+                  value={newStepInputs[task.title] || ''}
+                  onChange={(e) => handleStepInputChange(task.title, e.target.value)}
+                  fullWidth
+                />
+                <Button variant="contained" onClick={() => handleAddStep(task.title)}>
+                  Add
+                </Button>
+              </Stack>
+
+              <Box>
+                {task.steps.map((step, idx) => (
+                  <Chip
+                    key={idx}
+                    label={step.name}
+                    onDelete={() => handleRemoveStep(task.title, idx)}
+                    sx={{ mr: 1, mb: 1 }}
+                  />
+                ))}
+              </Box>
+            </Box>
+          ))}
 
           {/* Duration */}
           <Stack direction="row" spacing={2} sx={{ mb: 2 }}>

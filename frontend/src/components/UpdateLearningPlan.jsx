@@ -8,94 +8,150 @@ import {
   MenuItem,
   IconButton,
 } from '@mui/material';
-import { AddCircle, RemoveCircle } from '@mui/icons-material';
+import { RemoveCircle, AddCircle } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
 import LearningPlanService from '../services/LearningPlanService';
+import axios from 'axios'; // Direct API call to LearningProgress
 
 const UpdateLearningPlan = () => {
   const { id, userId, progressName } = useParams();
   const navigate = useNavigate();
   const [planData, setPlanData] = useState(null);
+  const [progressTasks, setProgressTasks] = useState([]);
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    const fetchPlan = async () => {
+    const fetchPlanAndProgressTasks = async () => {
       try {
-        let response;
+        let planResponse;
         if (id) {
-          response = await LearningPlanService.getPlanById(id);
+          planResponse = await LearningPlanService.getPlanById(id);
         } else if (userId && progressName) {
-          response = await LearningPlanService.getLatestPlan(userId, progressName);
+          planResponse = await LearningPlanService.getLatestPlan(userId, progressName);
         } else {
-          console.error("Missing parameters: 'id' or 'userId' and 'progressName' must be provided");
+          console.error('Missing parameters.');
           return;
         }
 
-        // Ensure steps is an array
-        const plan = response.data;
-        if (!Array.isArray(plan.steps)) {
-          plan.steps = [];
-        }
+        const plan = planResponse.data;
+
+        // Ensure plan has tasks array
+        if (!Array.isArray(plan.tasks)) plan.tasks = [];
+        plan.tasks.forEach(task => {
+          if (!Array.isArray(task.steps)) task.steps = [];
+        });
 
         setPlanData(plan);
+
+        // Fetch progress tasks and ensure they are passed to prefill plan if needed
+        if (plan.userId && plan.progressName) {
+          const progressResponse = await axios.get(`/api/LearningProgress/${plan.userId}/${plan.progressName}/latest`);
+          const progress = progressResponse.data;
+          setProgressTasks(progress.tasks || []);
+          
+          // If plan.tasks is empty, prefill from progressTasks
+          if (plan.tasks.length === 0 && progress.tasks) {
+            const prefilledTasks = progress.tasks.map(task => ({
+              title: task.title,
+              steps: [], // Allow user to define steps
+            }));
+            setPlanData(prev => ({ ...prev, tasks: prefilledTasks }));
+          }
+        }
       } catch (error) {
-        console.error('Error fetching plan:', error);
+        console.error('Error fetching plan or progress:', error);
       }
     };
 
-    fetchPlan();
+    fetchPlanAndProgressTasks();
   }, [id, userId, progressName]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setPlanData((prev) => ({
+    setPlanData(prev => ({
       ...prev,
       [name]: value,
     }));
   };
 
-  const handleStepChange = (index, value) => {
-    const newSteps = [...planData.steps];
-    newSteps[index] = value;
-    setPlanData((prev) => ({ ...prev, steps: newSteps }));
+  const handleTaskStepChange = (taskIndex, stepIndex, value) => {
+    const newTasks = [...planData.tasks];
+    newTasks[taskIndex].steps[stepIndex].name = value;
+    setPlanData(prev => ({ ...prev, tasks: newTasks }));
   };
 
-  const addStep = () => {
-    setPlanData((prev) => ({ ...prev, steps: [...prev.steps, ''] }));
+  const addStepToTask = (taskIndex) => {
+    const newTasks = [...planData.tasks];
+    newTasks[taskIndex].steps.push({ name: '', checked: false });
+    setPlanData(prev => ({ ...prev, tasks: newTasks }));
   };
 
-  const removeStep = (index) => {
-    const newSteps = [...planData.steps];
-    newSteps.splice(index, 1);
-    setPlanData((prev) => ({ ...prev, steps: newSteps }));
+  const removeStepFromTask = (taskIndex, stepIndex) => {
+    const newTasks = [...planData.tasks];
+    newTasks[taskIndex].steps.splice(stepIndex, 1);
+    setPlanData(prev => ({ ...prev, tasks: newTasks }));
   };
 
   const validate = () => {
     const newErrors = {};
+
     if (planData.durationValue <= 0) {
       newErrors.durationValue = 'Duration must be a positive number';
     }
 
-    if (planData.steps.length === 0 || planData.steps.some((s) => !s.trim())) {
-      newErrors.steps = 'Steps cannot be empty';
-    }
+    planData.tasks.forEach((task, taskIndex) => {
+      task.steps.forEach((step, stepIndex) => {
+        if (!step.name || !step.name.trim()) {
+          newErrors[`step-${taskIndex}-${stepIndex}`] = 'Step cannot be empty';
+        }
+      });
+    });
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleUpdate = async () => {
-    if (!validate()) return;
-
+    if (!validate()) {
+      console.log('Validation failed', errors);
+      return;
+    }
+  
     try {
+      // Get the plan ID to update
       const planId = id || planData._id;
-      await LearningPlanService.updatePlan(planId, planData);
+      console.log('Updating plan with ID:', planId);
+  
+      // **Fixed:** Ensure tasks and steps are not overwritten incorrectly
+      const updatedTasks = planData.tasks.map(task => ({
+        ...task,
+        steps: task.steps.filter(step => step.name.trim() !== ''), // Ensure no empty steps
+      }));
+  
+      // **Fixed:** Ensure we send the correct tasks and other fields for updating
+      const updatedPlanData = {
+        ...planData,
+        tasks: updatedTasks, // Don't overwrite with empty tasks
+      };
+  
+      console.log('Updated Plan Data:', JSON.stringify(updatedPlanData, null, 2));
+  
+      // **Check if the tasks array has valid tasks before sending**
+      if (!updatedPlanData.tasks || updatedPlanData.tasks.length === 0) {
+        console.error('No valid tasks in updated plan!', updatedPlanData);
+        return; // Prevent sending if tasks are empty or invalid
+      }
+  
+      // Now send the update request to your backend service
+      await LearningPlanService.updatePlan(planId, updatedPlanData);
+  
+      console.log('Update successful');
       navigate('/view-all-plans');
     } catch (error) {
       console.error('Error updating plan:', error);
     }
   };
-
+  
   if (!planData) return <Typography>Loading...</Typography>;
 
   return (
@@ -123,33 +179,51 @@ const UpdateLearningPlan = () => {
         multiline
       />
 
-      <Typography variant="subtitle1" sx={{ mt: 2 }}>
-        Steps
+      <Typography variant="h6" sx={{ mt: 3 }}>
+        Tasks
       </Typography>
-      {planData.steps.map((step, index) => (
-        <Box key={index} display="flex" alignItems="center" gap={1} mt={1}>
+
+      {planData.tasks.map((task, taskIndex) => (
+        <Box key={taskIndex} sx={{ mt: 2, p: 2, border: '1px solid #ccc', borderRadius: 2 }}>
           <TextField
-            label={`Step ${index + 1}`}
-            value={step}
-            onChange={(e) => handleStepChange(index, e.target.value)}
+            label={`Task ${taskIndex + 1} Title`}
+            value={task.title}
             fullWidth
-            error={!!errors.steps && !step.trim()}
+            margin="normal"
+            InputProps={{ readOnly: true }}
           />
-          <IconButton onClick={() => removeStep(index)} color="error">
-            <RemoveCircle />
-          </IconButton>
+
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>
+            Steps
+          </Typography>
+
+          {task.steps.map((step, stepIndex) => (
+            <Box key={stepIndex} display="flex" alignItems="center" gap={1} mt={1}>
+              <TextField
+                label={`Step ${stepIndex + 1}`}
+                value={step.name}
+                onChange={(e) => handleTaskStepChange(taskIndex, stepIndex, e.target.value)}
+                fullWidth
+                error={!!errors[`step-${taskIndex}-${stepIndex}`]}
+                helperText={errors[`step-${taskIndex}-${stepIndex}`]}
+              />
+              <IconButton color="error" onClick={() => removeStepFromTask(taskIndex, stepIndex)}>
+                <RemoveCircle />
+              </IconButton>
+            </Box>
+          ))}
+
+          <Box textAlign="center" mt={2}>
+            <Button
+              variant="outlined"
+              startIcon={<AddCircle />}
+              onClick={() => addStepToTask(taskIndex)}
+            >
+              Add Step
+            </Button>
+          </Box>
         </Box>
       ))}
-      {errors.steps && (
-        <Typography variant="caption" color="error">
-          {errors.steps}
-        </Typography>
-      )}
-      <Box sx={{ textAlign: 'left', mt: 1 }}>
-        <Button variant="outlined" onClick={addStep} startIcon={<AddCircle />}>
-          Add Step
-        </Button>
-      </Box>
 
       <TextField
         label="Duration Value"
@@ -192,7 +266,7 @@ const UpdateLearningPlan = () => {
         <MenuItem value="Low">Low</MenuItem>
       </TextField>
 
-      <Box sx={{ textAlign: 'center', mt: 3 }}>
+      <Box textAlign="center" mt={4}>
         <Button variant="contained" onClick={handleUpdate}>
           Update Plan
         </Button>

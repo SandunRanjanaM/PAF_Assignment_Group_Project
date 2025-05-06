@@ -47,7 +47,7 @@ const ViewAllPlan = () => {
       });
 
       setLatestPlansMap(latestMap);
-      setPlans(Object.values(latestMap));
+      setPlans(Object.values(latestMap));  // Update the plans state, ensuring the tasks/steps are included
     } catch (error) {
       console.error('Error fetching plans:', error);
     }
@@ -57,7 +57,7 @@ const ViewAllPlan = () => {
     if (window.confirm('Are you sure you want to delete this learning plan?')) {
       try {
         await LearningPlanService.deletePlan(id);
-        fetchPlans();
+        fetchPlans();  // Re-fetch the plans after deletion
       } catch (error) {
         console.error('Error deleting plan:', error);
       }
@@ -119,27 +119,43 @@ const ViewAllPlan = () => {
                   </Typography>
 
                   <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                    Steps Overview
+                    Tasks and Steps Overview
                   </Typography>
-                  <List dense disablePadding>
-                    {plan.steps?.map((step, index) => (
-                      <React.Fragment key={index}>
-                        <ListItem sx={{ pl: 0 }}>
-                          <ListItemIcon>
-                            <Avatar sx={{ bgcolor: 'primary.main', width: 24, height: 24, fontSize: 12 }}>
-                              {index + 1}
-                            </Avatar>
-                          </ListItemIcon>
-                          <ListItemText primary={step} />
-                        </ListItem>
-                        {index < plan.steps.length - 1 && (
-                          <Box display="flex" justifyContent="center" py={0.5}>
-                            <ArrowIcon fontSize="small" color="disabled" />
-                          </Box>
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </List>
+
+                  {/* Iterate over tasks */}
+                  {plan.tasks?.length > 0 ? (
+                    plan.tasks.map((task, taskIndex) => (
+                      <Box key={taskIndex} sx={{ mb: 2 }}>
+                        <Typography variant="body1" fontWeight={600}>
+                          {task.title}
+                        </Typography>
+
+                        <List dense disablePadding>
+                          {task.steps?.map((step, stepIndex) => (
+                            <React.Fragment key={stepIndex}>
+                              <ListItem sx={{ pl: 0 }}>
+                                <ListItemIcon>
+                                  <Avatar sx={{ bgcolor: step.checked ? 'green' : 'gray', width: 24, height: 24, fontSize: 12 }}>
+                                    {stepIndex + 1}
+                                  </Avatar>
+                                </ListItemIcon>
+                                <ListItemText primary={step.name} />
+                              </ListItem>
+                              {stepIndex < task.steps.length - 1 && (
+                                <Box display="flex" justifyContent="center" py={0.5}>
+                                  <ArrowIcon fontSize="small" color="disabled" />
+                                </Box>
+                              )}
+                            </React.Fragment>
+                          ))}
+                        </List>
+                      </Box>
+                    ))
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      No tasks available for this plan.
+                    </Typography>
+                  )}
 
                   <Divider sx={{ my: 2 }} />
 
