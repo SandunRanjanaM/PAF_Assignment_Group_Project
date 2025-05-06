@@ -22,7 +22,6 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import CommentIcon from "@mui/icons-material/Comment";
 //import IconButton from '@mui/material/IconButton';
 
-
 const PostList = () => {
   const [posts, setPosts] = useState([]);
   const [mediaIndexMap, setMediaIndexMap] = useState({});
@@ -30,6 +29,7 @@ const PostList = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [currentPostId, setCurrentPostId] = useState(null);
   const [editedDescription, setEditedDescription] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     PostService.getAllPosts()
@@ -99,9 +99,38 @@ const PostList = () => {
     setEditDialogOpen(false);
   };
 
+  const handleSearch = () => {
+    if (searchTerm.trim() === "") {
+      PostService.getAllPosts()
+        .then((response) => setPosts(response.data))
+        .catch((error) => console.error("Error fetching posts:", error));
+    } else {
+      PostService.searchPostsByHashtag(searchTerm.trim())
+        .then((response) => setPosts(response.data))
+        .catch((error) => console.error("Error searching posts:", error));
+    }
+  };
+
   return (
     <>
       <Box sx={{ p: 3, maxWidth: 600, mx: "auto" }}>
+        <Box sx={{ display: "flex", gap: 1, mb: 3 }}>
+          <TextField
+            fullWidth
+            variant="outlined"
+            size="small"
+            placeholder="Search by hashtag or keyword"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <Button
+            variant="contained"
+            sx={{ backgroundColor: '#ef5350', color: 'white', '&:hover': { backgroundColor: '#c62828' } }}
+            onClick={handleSearch}
+          >
+            Search
+          </Button>
+        </Box>
         <Stack spacing={4}>
           {posts.map((post) => (
             <Card key={post.id} elevation={3} sx={{ borderRadius: 3 }}>

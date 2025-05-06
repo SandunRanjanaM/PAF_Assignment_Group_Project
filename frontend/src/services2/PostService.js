@@ -31,6 +31,14 @@ const updatePostDescription = (id, newDescription) => {
   return axios.put(`${BASE_URL}/${id}`, { description: newDescription });
 };
 
+// 6. search posts with description
+const searchPostsByHashtag = (hashtag) => {
+  return axios.get(`/api/posts/search`, {
+    params: { hashtag },
+  });
+};
+
+
 
 // Export the service
 const PostService = {
@@ -39,6 +47,7 @@ const PostService = {
   getPostById,
   deletePost,
   updatePostDescription,
+  searchPostsByHashtag
 };
 
 export default PostService;
