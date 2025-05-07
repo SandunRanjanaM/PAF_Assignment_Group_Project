@@ -13,14 +13,32 @@ import {
   Snackbar,
   Alert,
   Divider,
+  useTheme,
+  Fade,
+  Zoom,
+  CircularProgress,
+  Avatar,
+  Badge,
+  Chip,
+  LinearProgress,
 } from '@mui/material';
+import {
+  Add as AddIcon,
+  Delete as DeleteIcon,
+  ArrowBack as ArrowBackIcon,
+  EmojiEvents as TrophyIcon,
+  CheckCircle as CheckCircleIcon,
+  Person as PersonIcon,
+  Title as TitleIcon,
+  Info as InfoIcon,
+  Brush as BrushIcon,
+  MenuBook as MenuBookIcon,
+} from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
 import LearningProgressService from '../services/LearningProgressService';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 const UpdateLearningProgress = () => {
+  const theme = useTheme();
   const { progressId } = useParams();
   const navigate = useNavigate();
 
@@ -36,6 +54,7 @@ const UpdateLearningProgress = () => {
 
   const [newTask, setNewTask] = useState('');
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   useEffect(() => {
@@ -118,6 +137,7 @@ const UpdateLearningProgress = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
     const sanitizedTasks = progressData.tasks.map(({ title, completed }) => ({ title, completed }));
     const calculatedPercentage = calculateProgressPercentage(sanitizedTasks);
 
@@ -132,6 +152,8 @@ const UpdateLearningProgress = () => {
     } catch (error) {
       console.error('Error updating progress:', error);
       showSnackbar('Failed to update progress.', 'error');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -143,129 +165,327 @@ const UpdateLearningProgress = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  if (loading) return <Typography>Loading progress data...</Typography>;
+  if (loading) {
+    return (
+      <Container sx={{ mt: 4, textAlign: 'center' }}>
+        <CircularProgress size={60} thickness={4} />
+        <Typography variant="h6" color="text.secondary" sx={{ mt: 2 }}>
+          Loading progress data...
+        </Typography>
+      </Container>
+    );
+  }
 
   const calculatedProgress = calculateProgressPercentage(progressData.tasks);
+  const isCompleted = calculatedProgress === 100;
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 4 }}>
-      <Paper elevation={4} sx={{ p: 4, borderRadius: 3 }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
-          <Typography variant="h5">Update Learning Progress</Typography>
-          <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/progresses')}>
-            Back
-          </Button>
+    <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+      <Paper elevation={0} sx={{ p: 4, borderRadius: 4, bgcolor: 'background.default' }}>
+        <Stack direction="row" alignItems="center" spacing={2} mb={4}>
+          <TrophyIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+          <Typography variant="h4" fontWeight="bold" color="primary">
+            Update Learning Progress
+          </Typography>
         </Stack>
 
-        <Divider sx={{ mb: 2 }} />
+        <Fade in={true}>
+          <form onSubmit={handleSubmit}>
+            <Stack spacing={3}>
+              <Paper elevation={0} sx={{ p: 3, borderRadius: 2, bgcolor: 'background.paper' }}>
+                <Stack spacing={2}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <PersonIcon sx={{ color: 'primary.main' }} />
+                    <TextField
+                      label="User ID"
+                      value={progressData.userId}
+                      fullWidth
+                      disabled
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          bgcolor: 'background.default',
+                        },
+                      }}
+                    />
+                  </Box>
 
-        <form onSubmit={handleSubmit}>
-          <Stack spacing={2}>
-            <TextField label="User ID" value={progressData.userId} fullWidth disabled />
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <TitleIcon sx={{ color: 'primary.main' }} />
+                    <TextField
+                      label="Progress Name"
+                      name="progressName"
+                      value={progressData.progressName}
+                      onChange={handleChange}
+                      fullWidth
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '&:hover fieldset': {
+                            borderColor: 'primary.main',
+                          },
+                        },
+                      }}
+                    />
+                  </Box>
 
-            <TextField
-              label="Progress Name"
-              name="progressName"
-              value={progressData.progressName}
-              onChange={handleChange}
-              fullWidth
-            />
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <TitleIcon sx={{ color: 'primary.main' }} />
+                    <TextField
+                      label="Title"
+                      name="title"
+                      value={progressData.title}
+                      onChange={handleChange}
+                      fullWidth
+                      required
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '&:hover fieldset': {
+                            borderColor: 'primary.main',
+                          },
+                        },
+                      }}
+                    />
+                  </Box>
 
-            <TextField
-              label="Title"
-              name="title"
-              value={progressData.title}
-              onChange={handleChange}
-              fullWidth
-              required
-            />
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                    <InfoIcon sx={{ color: 'primary.main', mt: 1 }} />
+                    <TextField
+                      label="Description"
+                      name="description"
+                      value={progressData.description}
+                      onChange={handleChange}
+                      fullWidth
+                      multiline
+                      rows={3}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '&:hover fieldset': {
+                            borderColor: 'primary.main',
+                          },
+                        },
+                      }}
+                    />
+                  </Box>
 
-            <TextField
-              label="Description"
-              name="description"
-              value={progressData.description}
-              onChange={handleChange}
-              fullWidth
-              multiline
-              rows={3}
-            />
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <BrushIcon sx={{ color: 'primary.main' }} />
+                    <TextField
+                      label="New Skills"
+                      name="newSkills"
+                      value={progressData.newSkills}
+                      onChange={handleChange}
+                      fullWidth
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '&:hover fieldset': {
+                            borderColor: 'primary.main',
+                          },
+                        },
+                      }}
+                    />
+                  </Box>
 
-            <TextField
-              label="New Skills"
-              name="newSkills"
-              value={progressData.newSkills}
-              onChange={handleChange}
-              fullWidth
-            />
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <MenuBookIcon sx={{ color: 'primary.main' }} />
+                    <TextField
+                      label="Resources"
+                      name="resources"
+                      value={progressData.resources}
+                      onChange={handleChange}
+                      fullWidth
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '&:hover fieldset': {
+                            borderColor: 'primary.main',
+                          },
+                        },
+                      }}
+                    />
+                  </Box>
 
-            <TextField
-              label="Resources"
-              name="resources"
-              value={progressData.resources}
-              onChange={handleChange}
-              fullWidth
-            />
+                  <Box>
+                    <Stack direction="row" alignItems="center" spacing={1} mb={1}>
+                      <Typography
+                        variant="subtitle2"
+                        color={isCompleted ? 'success.main' : 'text.primary'}
+                      >
+                        Progress: {calculatedProgress}%
+                      </Typography>
+                      {isCompleted && (
+                        <Chip
+                          icon={<CheckCircleIcon />}
+                          label="Completed"
+                          size="small"
+                          color="success"
+                          sx={{ height: 24 }}
+                        />
+                      )}
+                    </Stack>
+                    <LinearProgress
+                      variant="determinate"
+                      value={calculatedProgress}
+                      sx={{
+                        height: 8,
+                        borderRadius: 4,
+                        backgroundColor: 'background.paper',
+                        '& .MuiLinearProgress-bar': {
+                          backgroundColor: isCompleted ? 'success.main' : 'primary.main',
+                          borderRadius: 4,
+                        },
+                      }}
+                    />
+                  </Box>
+                </Stack>
+              </Paper>
 
-            <TextField
-              label="Progress Percentage"
-              value={`${calculatedProgress}%`}
-              fullWidth
-              disabled
-            />
+              <Paper elevation={0} sx={{ p: 3, borderRadius: 2, bgcolor: 'background.paper' }}>
+                <Stack spacing={2}>
+                  <Typography variant="subtitle1" color="primary" fontWeight={600}>
+                    Tasks
+                  </Typography>
 
-            <Box>
-              <Typography variant="subtitle1" gutterBottom>
-                Tasks
-              </Typography>
+                  {progressData.tasks.map((task, index) => (
+                    <Zoom in={true} key={index}>
+                      <Paper
+                        elevation={0}
+                        sx={{
+                          p: 2,
+                          borderRadius: 1,
+                          bgcolor: 'background.default',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          transition: 'all 0.2s',
+                          '&:hover': {
+                            bgcolor: 'action.hover',
+                            transform: 'translateX(4px)',
+                          },
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+                          <Avatar
+                            sx={{
+                              bgcolor: 'primary.light',
+                              color: 'primary.contrastText',
+                              width: 28,
+                              height: 28,
+                              fontSize: 14,
+                            }}
+                          >
+                            {index + 1}
+                          </Avatar>
+                          <TextField
+                            value={task.title}
+                            onChange={(e) => handleTaskTitleChange(index, e.target.value)}
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                            sx={{
+                              '& .MuiOutlinedInput-root': {
+                                '&:hover fieldset': {
+                                  borderColor: 'primary.main',
+                                },
+                              },
+                            }}
+                          />
+                          {/* <Checkbox
+                            checked={task.completed}
+                            onChange={() => handleTaskToggle(index)}
+                            disabled={task.isExisting && task.wasCheckedInitially}
+                            sx={{
+                              color: 'primary.main',
+                              '&.Mui-checked': {
+                                color: 'success.main',
+                              },
+                            }}
+                          /> */}
+                        </Box>
+                        <Tooltip title="Delete task">
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() => handleRemoveTask(index)}
+                            sx={{
+                              '&:hover': {
+                                bgcolor: 'error.light',
+                                color: 'error.contrastText',
+                              },
+                            }}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </Paper>
+                    </Zoom>
+                  ))}
 
-              {progressData.tasks.map((task, index) => (
-                <Box
-                  key={index}
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="space-between"
-                  mb={1}
-                >
-                  <TextField
-                    value={task.title}
-                    onChange={(e) => handleTaskTitleChange(index, e.target.value)}
-                    variant="outlined"
-                    size="small"
-                    sx={{ flexGrow: 1, mx: 1 }}
-                  />
-                  <Tooltip title="Delete task">
-                    <IconButton
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <TextField
+                      label="New Task"
+                      value={newTask}
+                      onChange={(e) => setNewTask(e.target.value)}
+                      fullWidth
                       size="small"
-                      color="error"
-                      onClick={() => handleRemoveTask(index)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              ))}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '&:hover fieldset': {
+                            borderColor: 'primary.main',
+                          },
+                        },
+                      }}
+                    />
+                    <Tooltip title="Add Task">
+                      <IconButton
+                        onClick={handleAddTask}
+                        color="primary"
+                        sx={{
+                          bgcolor: 'primary.light',
+                          color: 'primary.contrastText',
+                          '&:hover': {
+                            bgcolor: 'primary.main',
+                          },
+                        }}
+                      >
+                        <AddIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </Stack>
+              </Paper>
 
-              <Box display="flex" alignItems="center" mt={2}>
-                <TextField
-                  label="New Task"
-                  value={newTask}
-                  onChange={(e) => setNewTask(e.target.value)}
-                  fullWidth
-                  size="small"
-                />
-                <Tooltip title="Add Task">
-                  <IconButton onClick={handleAddTask} color="primary">
-                    <AddIcon />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-            </Box>
-
-            <Button type="submit" variant="contained" color="primary">
-              Update Progress
-            </Button>
-          </Stack>
-        </form>
+              <Stack direction="row" spacing={2} justifyContent="center">
+                <Button
+                  variant="outlined"
+                  onClick={() => navigate('/progresses')}
+                  startIcon={<ArrowBackIcon />}
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    px: 4,
+                  }}
+                >
+                  Back
+                </Button>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  disabled={submitting}
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    px: 4,
+                    boxShadow: theme.shadows[2],
+                    '&:hover': {
+                      boxShadow: theme.shadows[4],
+                    },
+                  }}
+                >
+                  {submitting ? 'Updating...' : 'Update Progress'}
+                </Button>
+              </Stack>
+            </Stack>
+          </form>
+        </Fade>
       </Paper>
 
       <Snackbar
@@ -274,7 +494,15 @@ const UpdateLearningProgress = () => {
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{
+            width: '100%',
+            borderRadius: 2,
+            boxShadow: theme.shadows[4],
+          }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>

@@ -9,18 +9,46 @@ import {
   IconButton,
   Checkbox,
   LinearProgress,
+  Paper,
+  useTheme,
+  Stack,
+  Tooltip,
+  Fade,
+  Divider,
+  Alert,
+  Snackbar,
+  Zoom,
+  Avatar,
+  Badge,
+  CircularProgress,
+  Chip,
 } from '@mui/material';
-import { RemoveCircle, AddCircle } from '@mui/icons-material';
+import {
+  RemoveCircle,
+  AddCircle,
+  EmojiEvents as TrophyIcon,
+  ArrowBack as ArrowBackIcon,
+  Add as AddIcon,
+  Delete as DeleteIcon,
+  CheckCircle as CheckCircleIcon,
+  AccessTime as AccessTimeIcon,
+  PriorityHigh as PriorityHighIcon,
+} from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
 import LearningPlanService from '../services/LearningPlanService';
 import LearningProgressService from '../services/LearningProgressService';
 
 const UpdateLearningPlan = () => {
+  const theme = useTheme();
   const { id, userId, progressName } = useParams();
   const navigate = useNavigate();
   const [planData, setPlanData] = useState(null);
   const [progressTasks, setProgressTasks] = useState([]);
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [newTask, setNewTask] = useState('');
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   useEffect(() => {
     const fetchPlanAndProgressTasks = async () => {
@@ -78,6 +106,8 @@ const UpdateLearningPlan = () => {
         }
       } catch (error) {
         console.error('Error fetching plan or progress:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -147,181 +177,401 @@ const UpdateLearningPlan = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleUpdate = async () => {
+  const handleUpdate = async (e) => {
+    e.preventDefault();
     if (!validate()) {
-      console.log('Validation failed', errors);
+      setSnackbar({
+        open: true,
+        message: 'Please fix the validation errors before updating.',
+        severity: 'error'
+      });
       return;
     }
-  
+
+    setSubmitting(true);
     try {
-      // Get the plan ID to update
       const planId = id || planData._id;
-      console.log('Updating plan with ID:', planId);
-  
-      // **Fixed:** Ensure tasks and steps are not overwritten incorrectly
       const updatedTasks = planData.tasks.map(task => ({
         ...task,
-        steps: task.steps.filter(step => step.name.trim() !== ''), // Ensure no empty steps
+        steps: task.steps.filter(step => step.name.trim() !== ''),
       }));
-  
-      // **Fixed:** Ensure we send the correct tasks and other fields for updating
+
       const updatedPlanData = {
         ...planData,
-        tasks: updatedTasks, // Don't overwrite with empty tasks
+        tasks: updatedTasks,
       };
-  
-      console.log('Updated Plan Data:', JSON.stringify(updatedPlanData, null, 2));
-  
-      // **Check if the tasks array has valid tasks before sending**
-      if (!updatedPlanData.tasks || updatedPlanData.tasks.length === 0) {
-        console.error('No valid tasks in updated plan!', updatedPlanData);
-        return; // Prevent sending if tasks are empty or invalid
-      }
-  
-      // Now send the update request to your backend service
+
       await LearningPlanService.updatePlan(planId, updatedPlanData);
-  
-      console.log('Update successful');
-      navigate('/view-all-plans');
+      setSnackbar({
+        open: true,
+        message: 'Plan updated successfully!',
+        severity: 'success'
+      });
+      setTimeout(() => navigate('/view-all-plans'), 1000);
     } catch (error) {
       console.error('Error updating plan:', error);
+      setSnackbar({
+        open: true,
+        message: 'Failed to update plan. Please try again.',
+        severity: 'error'
+      });
+    } finally {
+      setSubmitting(false);
     }
   };
-  
-  if (!planData) return <Typography>Loading...</Typography>;
+
+  const getProgressColor = (percentage) => {
+    if (percentage >= 80) return 'success.main';
+    if (percentage >= 50) return 'warning.main';
+    return 'error.main';
+  };
+
+  if (loading) {
+    return (
+      <Container sx={{ mt: 4, textAlign: 'center' }}>
+        <CircularProgress size={60} thickness={4} />
+        <Typography variant="h6" color="text.secondary" sx={{ mt: 2 }}>
+          Loading plan data...
+        </Typography>
+      </Container>
+    );
+  }
 
   return (
-    <Container sx={{ mt: 4 }}>
-      <Typography variant="h5" gutterBottom>
-        Update Learning Plan
-      </Typography>
-
-      <TextField
-        label="Title"
-        name="title"
-        value={planData.title || ''}
-        onChange={handleChange}
-        fullWidth
-        margin="normal"
-      />
-
-      <TextField
-        label="Description"
-        name="description"
-        value={planData.description || ''}
-        onChange={handleChange}
-        fullWidth
-        margin="normal"
-        multiline
-      />
-
-      <Typography variant="h6" sx={{ mt: 3 }}>
-        Tasks
-      </Typography>
-
-      {planData.tasks.map((task, taskIndex) => (
-        <Box key={taskIndex} sx={{ mt: 2, p: 2, border: '1px solid #ccc', borderRadius: 2 }}>
-          <TextField
-            label={`Task ${taskIndex + 1} Title`}
-            value={task.title}
-            fullWidth
-            margin="normal"
-            InputProps={{ readOnly: true }}
-          />
-
-          <Box sx={{ mt: 1, mb: 2 }}>
-            <Typography variant="body2" color="text.secondary">
-              Progress: {calculateTaskProgress(task).toFixed(0)}%
-            </Typography>
-            <LinearProgress 
-              variant="determinate" 
-              value={calculateTaskProgress(task)} 
-              sx={{ mt: 0.5 }}
-            />
-          </Box>
-
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            Steps
+    <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+      <Paper elevation={0} sx={{ p: 4, borderRadius: 4, bgcolor: 'background.default' }}>
+        <Stack direction="row" alignItems="center" spacing={2} mb={4}>
+          <TrophyIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+          <Typography variant="h4" fontWeight="bold" color="primary">
+            Update Learning Plan
           </Typography>
+        </Stack>
 
-          {task.steps.map((step, stepIndex) => (
-            <Box key={stepIndex} display="flex" alignItems="center" gap={1} mt={1}>
-              <Checkbox
-                checked={step.checked || false}
-                onChange={(e) => handleStepCheck(taskIndex, stepIndex, e.target.checked)}
-              />
-              <TextField
-                label={`Step ${stepIndex + 1}`}
-                value={step.name}
-                onChange={(e) => handleTaskStepChange(taskIndex, stepIndex, e.target.value)}
-                fullWidth
-                error={!!errors[`step-${taskIndex}-${stepIndex}`]}
-                helperText={errors[`step-${taskIndex}-${stepIndex}`]}
-              />
-              <IconButton color="error" onClick={() => removeStepFromTask(taskIndex, stepIndex)}>
-                <RemoveCircle />
-              </IconButton>
-            </Box>
-          ))}
+        <Fade in={true}>
+          <form onSubmit={handleUpdate}>
+            <Stack spacing={3}>
+              <Paper elevation={0} sx={{ p: 3, borderRadius: 2, bgcolor: 'background.paper' }}>
+                <Stack spacing={2}>
+                  <TextField
+                    label="Title"
+                    name="title"
+                    value={planData.title || ''}
+                    onChange={handleChange}
+                    fullWidth
+                    required
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '&:hover fieldset': {
+                          borderColor: 'primary.main',
+                        },
+                      },
+                    }}
+                  />
 
-          <Box textAlign="center" mt={2}>
-            <Button
-              variant="outlined"
-              startIcon={<AddCircle />}
-              onClick={() => addStepToTask(taskIndex)}
-            >
-              Add Step
-            </Button>
-          </Box>
-        </Box>
-      ))}
+                  <TextField
+                    label="Description"
+                    name="description"
+                    value={planData.description || ''}
+                    onChange={handleChange}
+                    fullWidth
+                    multiline
+                    rows={3}
+                    required
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '&:hover fieldset': {
+                          borderColor: 'primary.main',
+                        },
+                      },
+                    }}
+                  />
+                </Stack>
+              </Paper>
 
-      <TextField
-        label="Duration Value"
-        name="durationValue"
-        type="number"
-        value={planData.durationValue || ''}
-        onChange={handleChange}
-        fullWidth
-        margin="normal"
-        inputProps={{ min: 1 }}
-        error={!!errors.durationValue}
-        helperText={errors.durationValue}
-      />
+              <Typography variant="h6" color="primary" fontWeight={600}>
+                Tasks
+              </Typography>
 
-      <TextField
-        select
-        label="Duration Unit"
-        name="durationUnit"
-        value={planData.durationUnit || ''}
-        onChange={handleChange}
-        fullWidth
-        margin="normal"
+              {planData.tasks.map((task, taskIndex) => (
+                <Zoom in={true} key={taskIndex}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 3,
+                      borderRadius: 2,
+                      bgcolor: 'background.paper',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        borderColor: 'primary.main',
+                        boxShadow: theme.shadows[2],
+                      },
+                    }}
+                  >
+                    <Stack spacing={2}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Avatar
+                          sx={{
+                            bgcolor: 'primary.light',
+                            color: 'primary.contrastText',
+                            width: 32,
+                            height: 32,
+                          }}
+                        >
+                          {taskIndex + 1}
+                        </Avatar>
+                        <TextField
+                          label={`Task ${taskIndex + 1} Title`}
+                          value={task.title}
+                          fullWidth
+                          InputProps={{ readOnly: true }}
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              bgcolor: 'background.default',
+                            },
+                          }}
+                        />
+                      </Box>
+
+                      <Box>
+                        <Stack direction="row" alignItems="center" spacing={1} mb={1}>
+                          <Typography variant="body2" color="text.secondary">
+                            Progress: {calculateTaskProgress(task).toFixed(0)}%
+                          </Typography>
+                          {calculateTaskProgress(task) === 100 && (
+                            <Chip
+                              icon={<CheckCircleIcon />}
+                              label="Completed"
+                              size="small"
+                              color="success"
+                              sx={{ height: 24 }}
+                            />
+                          )}
+                        </Stack>
+                        <LinearProgress
+                          variant="determinate"
+                          value={calculateTaskProgress(task)}
+                          sx={{
+                            height: 8,
+                            borderRadius: 4,
+                            backgroundColor: 'background.default',
+                            '& .MuiLinearProgress-bar': {
+                              backgroundColor: getProgressColor(calculateTaskProgress(task)),
+                              borderRadius: 4,
+                            },
+                          }}
+                        />
+                      </Box>
+
+                      <Typography variant="subtitle2" color="primary" fontWeight={600}>
+                        Steps
+                      </Typography>
+
+                      {task.steps.map((step, stepIndex) => (
+                        <Box
+                          key={stepIndex}
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            p: 1,
+                            borderRadius: 1,
+                            bgcolor: 'background.default',
+                            transition: 'all 0.2s',
+                            '&:hover': {
+                              bgcolor: 'action.hover',
+                            },
+                          }}
+                        >
+                          <Checkbox
+                            checked={step.checked || false}
+                            onChange={(e) => handleStepCheck(taskIndex, stepIndex, e.target.checked)}
+                            sx={{
+                              color: 'primary.main',
+                              '&.Mui-checked': {
+                                color: 'success.main',
+                              },
+                            }}
+                          />
+                          <TextField
+                            label={`Step ${stepIndex + 1}`}
+                            value={step.name}
+                            onChange={(e) => handleTaskStepChange(taskIndex, stepIndex, e.target.value)}
+                            fullWidth
+                            size="small"
+                            error={!!errors[`step-${taskIndex}-${stepIndex}`]}
+                            helperText={errors[`step-${taskIndex}-${stepIndex}`]}
+                            sx={{
+                              '& .MuiOutlinedInput-root': {
+                                '&:hover fieldset': {
+                                  borderColor: 'primary.main',
+                                },
+                              },
+                            }}
+                          />
+                          <Tooltip title="Remove Step">
+                            <IconButton
+                              color="error"
+                              onClick={() => removeStepFromTask(taskIndex, stepIndex)}
+                              sx={{
+                                '&:hover': {
+                                  bgcolor: 'error.light',
+                                  color: 'error.contrastText',
+                                },
+                              }}
+                            >
+                              <RemoveCircle />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      ))}
+
+                      <Box textAlign="center">
+                        <Button
+                          variant="outlined"
+                          startIcon={<AddCircle />}
+                          onClick={() => addStepToTask(taskIndex)}
+                          sx={{
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            borderColor: 'primary.main',
+                            color: 'primary.main',
+                            '&:hover': {
+                              borderColor: 'primary.dark',
+                              bgcolor: 'primary.light',
+                              color: 'primary.contrastText',
+                            },
+                          }}
+                        >
+                          Add Step
+                        </Button>
+                      </Box>
+                    </Stack>
+                  </Paper>
+                </Zoom>
+              ))}
+
+              <Paper elevation={0} sx={{ p: 3, borderRadius: 2, bgcolor: 'background.paper' }}>
+                <Stack spacing={2}>
+                  <Typography variant="subtitle1" color="primary" fontWeight={600}>
+                    Duration & Priority
+                  </Typography>
+                  <TextField
+                    label="Duration Value"
+                    name="durationValue"
+                    type="number"
+                    value={planData.durationValue || ''}
+                    onChange={handleChange}
+                    fullWidth
+                    inputProps={{ min: 1 }}
+                    error={!!errors.durationValue}
+                    helperText={errors.durationValue}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '&:hover fieldset': {
+                          borderColor: 'primary.main',
+                        },
+                      },
+                    }}
+                  />
+
+                  <TextField
+                    select
+                    label="Duration Unit"
+                    name="durationUnit"
+                    value={planData.durationUnit || ''}
+                    onChange={handleChange}
+                    fullWidth
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '&:hover fieldset': {
+                          borderColor: 'primary.main',
+                        },
+                      },
+                    }}
+                  >
+                    <MenuItem value="days">Days</MenuItem>
+                    <MenuItem value="weeks">Weeks</MenuItem>
+                    <MenuItem value="months">Months</MenuItem>
+                  </TextField>
+
+                  <TextField
+                    select
+                    label="Priority"
+                    name="priority"
+                    value={planData.priority || ''}
+                    onChange={handleChange}
+                    fullWidth
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '&:hover fieldset': {
+                          borderColor: 'primary.main',
+                        },
+                      },
+                    }}
+                  >
+                    <MenuItem value="High">High</MenuItem>
+                    <MenuItem value="Medium">Medium</MenuItem>
+                    <MenuItem value="Low">Low</MenuItem>
+                  </TextField>
+                </Stack>
+              </Paper>
+
+              <Stack direction="row" spacing={2} justifyContent="center">
+                <Button
+                  variant="outlined"
+                  onClick={() => navigate('/view-all-plans')}
+                  startIcon={<ArrowBackIcon />}
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    px: 4,
+                  }}
+                >
+                  Back
+                </Button>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  disabled={submitting}
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    px: 4,
+                    boxShadow: theme.shadows[2],
+                    '&:hover': {
+                      boxShadow: theme.shadows[4],
+                    },
+                  }}
+                >
+                  {submitting ? 'Updating...' : 'Update Plan'}
+                </Button>
+              </Stack>
+            </Stack>
+          </form>
+        </Fade>
+      </Paper>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <MenuItem value="days">Days</MenuItem>
-        <MenuItem value="weeks">Weeks</MenuItem>
-        <MenuItem value="months">Months</MenuItem>
-      </TextField>
-
-      <TextField
-        select
-        label="Priority"
-        name="priority"
-        value={planData.priority || ''}
-        onChange={handleChange}
-        fullWidth
-        margin="normal"
-      >
-        <MenuItem value="High">High</MenuItem>
-        <MenuItem value="Medium">Medium</MenuItem>
-        <MenuItem value="Low">Low</MenuItem>
-      </TextField>
-
-      <Box textAlign="center" mt={4}>
-        <Button variant="contained" onClick={handleUpdate}>
-          Update Plan
-        </Button>
-      </Box>
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{
+            width: '100%',
+            borderRadius: 2,
+            boxShadow: theme.shadows[4],
+          }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
