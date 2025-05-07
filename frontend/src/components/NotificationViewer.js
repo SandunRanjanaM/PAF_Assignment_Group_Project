@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Circle as UnreadIcon, CheckCircle as ReadIcon, Check as CheckIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { formatDistanceToNow, isToday, isYesterday, format } from 'date-fns';
 import './NotificationViewer.css';
 
 import {
@@ -22,8 +23,8 @@ const NotificationViewer = () => {
   const [notifications, setNotifications] = useState([]);
   const [error, setError] = useState('');
 
-  // Function to format the timestamp to a readable date
-  const formatDate = (timestamp) => {
+  // Function to format the timestamp to a friendly date
+  const formatTimeAgo = (timestamp) => {
     if (!timestamp || isNaN(timestamp)) {
       return 'Invalid Date';
     }
@@ -33,7 +34,21 @@ const NotificationViewer = () => {
       return 'Invalid Date';
     }
 
-    return date.toLocaleString(); // This formats the date to a human-readable string
+    // If less than 1 minute ago
+    const diffInSeconds = (new Date() - date) / 1000;
+    if (diffInSeconds < 60) {
+      return 'Just now';
+    }
+
+    // If today or yesterday
+    if (isToday(date)) {
+      return formatDistanceToNow(date, { addSuffix: true });
+    } else if (isYesterday(date)) {
+      return 'Yesterday';
+    }
+
+    // If more than yesterday, show relative time
+    return formatDistanceToNow(date, { addSuffix: true });
   };
 
   const handleFetchNotifications = async () => {
@@ -147,7 +162,7 @@ const NotificationViewer = () => {
                       Post ID: {notif.postId}
                     </Typography>
                     <Typography className="notification-date">
-                      Date: {formatDate(notif.date || notif.timestamp)}
+                      {formatTimeAgo(notif.date || notif.timestamp)}
                     </Typography>
                   </>
                 }

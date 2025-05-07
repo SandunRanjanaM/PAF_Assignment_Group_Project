@@ -63,8 +63,9 @@
 
 .notification-date {
   margin-top: 4px;
-  color: #888;
+  color: #666;
   font-size: 0.75rem;
+  font-style: italic;
 }
 
 .notification-actions {
