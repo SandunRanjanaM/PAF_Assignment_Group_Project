@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Circle as UnreadIcon, CheckCircle as ReadIcon, Check as CheckIcon } from '@mui/icons-material';
+import { Circle as UnreadIcon, CheckCircle as ReadIcon, Check as CheckIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import './NotificationViewer.css';
 
 import {
@@ -60,11 +60,24 @@ const NotificationViewer = () => {
     }
   };
 
+  const handleDelete = async (notificationId) => {
+    try {
+      await NotificationService.deleteNotification(notificationId);
+      // Update the local state to remove the notification
+      setNotifications(notifications.filter(notif => notif.id !== notificationId));
+    } catch (err) {
+      console.error('Failed to delete notification:', err);
+    }
+  };
+
   const handleMarkAllAsRead = async () => {
     try {
       await NotificationService.markAllNotificationsAsRead(userId);
-      // Update the local state to reflect the changes
-      setNotifications(notifications.map(notif => ({ ...notif, isRead: true })));
+      // Delete all notifications after marking them as read
+      const deletePromises = notifications.map(notif => NotificationService.deleteNotification(notif.id));
+      await Promise.all(deletePromises);
+      // Update the local state to remove all notifications
+      setNotifications([]);
     } catch (err) {
       console.error('Failed to mark all notifications as read:', err);
     }
@@ -139,17 +152,27 @@ const NotificationViewer = () => {
                   </>
                 }
               />
-              {!notif.isRead && (
+              <Box className="notification-actions">
+                {!notif.isRead && (
+                  <IconButton
+                    edge="end"
+                    aria-label="mark as read"
+                    onClick={() => handleMarkAsRead(notif.id)}
+                    size="small"
+                  >
+                    <CheckIcon color="primary" />
+                  </IconButton>
+                )}
                 <IconButton
                   edge="end"
-                  aria-label="mark as read"
-                  onClick={() => handleMarkAsRead(notif.id)}
+                  aria-label="delete notification"
+                  onClick={() => handleDelete(notif.id)}
                   size="small"
-                  className="notification-actions"
+                  sx={{ color: 'error.main' }}
                 >
-                  <CheckIcon color="primary" />
+                  <DeleteIcon />
                 </IconButton>
-              )}
+              </Box>
             </ListItem>
             <Divider className="notification-divider" />
           </div>

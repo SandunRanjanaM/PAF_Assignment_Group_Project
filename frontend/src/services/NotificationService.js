@@ -31,6 +31,15 @@ class NotificationService {
             throw error;
         }
     }
+
+    static async deleteNotification(notificationId) {
+        try {
+            await axios.delete(API_URL + notificationId);
+        } catch (error) {
+            console.error('Error deleting notification', error);
+            throw error;
+        }
+    }
 }
 
 export default NotificationService;
