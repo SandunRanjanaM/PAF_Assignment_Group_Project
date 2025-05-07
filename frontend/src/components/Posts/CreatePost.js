@@ -97,19 +97,19 @@ const CreatePost = () => {
   };
 
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
-      <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: 600 }}>
-        <Typography variant="h4" align="center" gutterBottom sx={{ fontWeight: 'bold' }}>
+    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5, p: 2 }}>
+      <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: 600, borderRadius: 2, background: 'linear-gradient(to bottom, #f8f9fa, #ffffff)' }}>
+        <Typography variant="h4" align="center" gutterBottom sx={{ fontWeight: 'bold', color: '#424242', mb: 2 }}>
           Create a Post
         </Typography>
 
-        <Divider sx={{ mb: 2 }} />
+        <Divider sx={{ mb: 3 }} />
 
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
         {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
 
         <form onSubmit={handleSubmit}>
-          <Stack spacing={2}>
+          <Stack spacing={3}>
             <TextField
               label="Description"
               value={description}
@@ -117,25 +117,42 @@ const CreatePost = () => {
               multiline
               rows={3}
               fullWidth
+              variant="outlined"
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1 } }}
             />
 
-            <Button variant="contained" component="label">
-              Upload Media
-              <input
-                type="file"
-                hidden
-                multiple
-                accept="image/jpeg,image/png,video/*"
-                onChange={handleMediaChange}
-              />
-            </Button>
+            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Button
+                variant="contained"
+                component="label"
+                sx={{
+                  background: 'linear-gradient(45deg, #2563eb, #3b82f6)',
+                  color: 'white',
+                  '&:hover': {
+                    background: 'linear-gradient(45deg, #1d4ed8, #2563eb)',
+                  },
+                  borderRadius: 1,
+                  px: 3,
+                  py: 1,
+                }}
+              >
+                Upload Media
+                <input
+                  type="file"
+                  hidden
+                  multiple
+                  accept="image/jpeg,image/png,video/*"
+                  onChange={handleMediaChange}
+                />
+              </Button>
+            </Box>
 
             {mediaFiles.length > 0 && (
-              <Box>
-                <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1, color: '#4b5563' }}>
                   Media Preview:
                 </Typography>
-                <Stack direction="row" spacing={2}>
+                <Stack direction="row" spacing={2} sx={{ flexWrap: 'wrap', gap: 2 }}>
                   {mediaFiles.map((file, idx) => {
                     const url = URL.createObjectURL(file);
                     const isImage = file.type.startsWith('image');
@@ -147,7 +164,7 @@ const CreatePost = () => {
                         src={url}
                         alt={`preview-${idx}`}
                         height="100"
-                        style={{ borderRadius: 8 }}
+                        style={{ borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
                       />
                     ) : isVideo ? (
                       <video
@@ -155,7 +172,7 @@ const CreatePost = () => {
                         src={url}
                         height="100"
                         controls
-                        style={{ borderRadius: 8 }}
+                        style={{ borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
                       />
                     ) : null;
                   })}
@@ -163,7 +180,20 @@ const CreatePost = () => {
               </Box>
             )}
 
-            <Button type="submit" variant="contained" color="primary">
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              sx={{
+                background: 'linear-gradient(45deg, #2563eb, #3b82f6)',
+                color: 'white',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #1d4ed8, #2563eb)',
+                },
+                borderRadius: 1,
+                py: 1.5,
+              }}
+            >
               Create Post
             </Button>
           </Stack>
