@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Circle as UnreadIcon, CheckCircle as ReadIcon, Check as CheckIcon } from '@mui/icons-material';
+
 import {
   TextField,
   Button,
@@ -7,8 +9,11 @@ import {
   List,
   ListItem,
   ListItemText,
-  Divider
+  Divider,
+  IconButton,
+  Box
 } from '@mui/material';
+
 import NotificationService from '../services/NotificationService';
 
 const NotificationViewer = () => {
@@ -42,6 +47,28 @@ const NotificationViewer = () => {
     }
   };
 
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      await NotificationService.markNotificationAsRead(notificationId);
+      // Update the local state to reflect the change
+      setNotifications(notifications.map(notif =>
+        notif.id === notificationId ? { ...notif, isRead: true } : notif
+      ));
+    } catch (err) {
+      console.error('Failed to mark notification as read:', err);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await NotificationService.markAllNotificationsAsRead(userId);
+      // Update the local state to reflect the changes
+      setNotifications(notifications.map(notif => ({ ...notif, isRead: true })));
+    } catch (err) {
+      console.error('Failed to mark all notifications as read:', err);
+    }
+  };
+
   return (
     <Paper elevation={3} style={{ padding: '20px', maxWidth: 700, margin: '20px auto' }}>
       <Typography variant="h6" gutterBottom>
@@ -55,9 +82,16 @@ const NotificationViewer = () => {
         onChange={(e) => setUserId(e.target.value)}
         margin="normal"
       />
-      <Button variant="contained" color="primary" onClick={handleFetchNotifications} style={{ marginTop: 10 }}>
-        Fetch Notifications
-      </Button>
+      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+        <Button variant="contained" color="primary" onClick={handleFetchNotifications}>
+          Fetch Notifications
+        </Button>
+        {notifications.length > 0 && (
+          <Button variant="outlined" color="primary" onClick={handleMarkAllAsRead}>
+            Mark All as Read
+          </Button>
+        )}
+      </Box>
 
       {error && (
         <Typography color="error" style={{ marginTop: 10 }}>
@@ -75,9 +109,28 @@ const NotificationViewer = () => {
       <List style={{ marginTop: 20 }}>
         {notifications.map((notif, index) => (
           <div key={index}>
-            <ListItem alignItems="flex-start">
+            <ListItem
+              alignItems="flex-start"
+              sx={{
+                backgroundColor: notif.isRead ? 'transparent' : 'rgba(25, 118, 210, 0.08)',
+                '&:hover': {
+                  backgroundColor: 'rgba(25, 118, 210, 0.12)',
+                },
+              }}
+            >
               <ListItemText
-                primary={notif.message}
+                primary={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {notif.isRead ? <ReadIcon color="action" /> : <UnreadIcon color="primary" />}
+                    <Typography
+                      component="span"
+                      variant="body1"
+                      sx={{ fontWeight: notif.isRead ? 'normal' : 'bold' }}
+                    >
+                      {notif.message}
+                    </Typography>
+                  </Box>
+                }
                 secondary={
                   <>
                     <Typography variant="body2" color="textSecondary">
@@ -95,6 +148,16 @@ const NotificationViewer = () => {
                   </>
                 }
               />
+              {!notif.isRead && (
+                <IconButton
+                  edge="end"
+                  aria-label="mark as read"
+                  onClick={() => handleMarkAsRead(notif.id)}
+                  size="small"
+                >
+                  <CheckIcon color="primary" />
+                </IconButton>
+              )}
             </ListItem>
             <Divider />
           </div>
