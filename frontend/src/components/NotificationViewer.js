@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Circle as UnreadIcon, CheckCircle as ReadIcon, Check as CheckIcon } from '@mui/icons-material';
+import './NotificationViewer.css';
 
 import {
   TextField,
@@ -70,8 +71,8 @@ const NotificationViewer = () => {
   };
 
   return (
-    <Paper elevation={3} style={{ padding: '20px', maxWidth: 700, margin: '20px auto' }}>
-      <Typography variant="h6" gutterBottom>
+    <Paper className="notification-container">
+      <Typography variant="h6" className="notification-header">
         View Notifications
       </Typography>
       <TextField
@@ -80,9 +81,9 @@ const NotificationViewer = () => {
         variant="outlined"
         value={userId}
         onChange={(e) => setUserId(e.target.value)}
-        margin="normal"
+        className="notification-input"
       />
-      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+      <Box className="notification-buttons">
         <Button variant="contained" color="primary" onClick={handleFetchNotifications}>
           Fetch Notifications
         </Button>
@@ -94,38 +95,31 @@ const NotificationViewer = () => {
       </Box>
 
       {error && (
-        <Typography color="error" style={{ marginTop: 10 }}>
+        <Typography className="error-message">
           {error}
         </Typography>
       )}
 
-      {/* If no notifications */}
       {notifications.length === 0 && !error && (
-        <Typography color="textSecondary" style={{ marginTop: 20 }}>
+        <Typography className="empty-state">
           No notifications available.
         </Typography>
       )}
 
-      <List style={{ marginTop: 20 }}>
+      <List className="notification-list">
         {notifications.map((notif, index) => (
           <div key={index}>
             <ListItem
               alignItems="flex-start"
-              sx={{
-                backgroundColor: notif.isRead ? 'transparent' : 'rgba(25, 118, 210, 0.08)',
-                '&:hover': {
-                  backgroundColor: 'rgba(25, 118, 210, 0.12)',
-                },
-              }}
+              className={`notification-item ${!notif.isRead ? 'unread' : ''}`}
             >
               <ListItemText
                 primary={
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box className="notification-content">
                     {notif.isRead ? <ReadIcon color="action" /> : <UnreadIcon color="primary" />}
                     <Typography
                       component="span"
-                      variant="body1"
-                      sx={{ fontWeight: notif.isRead ? 'normal' : 'bold' }}
+                      className={`notification-message ${!notif.isRead ? 'unread' : ''}`}
                     >
                       {notif.message}
                     </Typography>
@@ -133,18 +127,15 @@ const NotificationViewer = () => {
                 }
                 secondary={
                   <>
-                    <Typography variant="body2" color="textSecondary">
+                    <Typography className="notification-meta">
                       From: {notif.senderUserId || 'Unknown'}
                     </Typography>
-                    <Typography variant="body2" color="textSecondary">
+                    <Typography className="notification-meta">
                       Post ID: {notif.postId}
                     </Typography>
-                    <div style={{ marginTop: 5 }}>
-                      {/* Added check for undefined dates */}
-                      <Typography variant="body2" color="textSecondary">
-                        Date: {formatDate(notif.date || notif.timestamp)} {/* Use 'timestamp' if 'date' is missing */}
-                      </Typography>
-                    </div>
+                    <Typography className="notification-date">
+                      Date: {formatDate(notif.date || notif.timestamp)}
+                    </Typography>
                   </>
                 }
               />
@@ -154,12 +145,13 @@ const NotificationViewer = () => {
                   aria-label="mark as read"
                   onClick={() => handleMarkAsRead(notif.id)}
                   size="small"
+                  className="notification-actions"
                 >
                   <CheckIcon color="primary" />
                 </IconButton>
               )}
             </ListItem>
-            <Divider />
+            <Divider className="notification-divider" />
           </div>
         ))}
       </List>
