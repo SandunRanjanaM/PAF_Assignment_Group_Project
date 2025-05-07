@@ -16,6 +16,8 @@ import {
   DialogTitle,
   Button,
   TextField,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -37,6 +39,9 @@ const PostList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
   const [likedPosts, setLikedPosts] = useState({});
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [postToDelete, setPostToDelete] = useState(null);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   useEffect(() => {
     PostService.getAllPosts()
@@ -59,22 +64,23 @@ const PostList = () => {
   };
 
   const handleDelete = (postId) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to permanently delete this post?"
-    );
-    if (confirmDelete) {
-      PostService.deletePost(postId)
-        .then(() => {
-          alert("Post deleted successfully.");
-          setPosts((prevPosts) =>
-            prevPosts.filter((post) => post.id !== postId)
-          );
-        })
-        .catch((error) => {
-          console.error("Error deleting post:", error);
-          alert("An error occurred while deleting the post.");
-        });
-    }
+    setPostToDelete(postId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    PostService.deletePost(postToDelete)
+      .then(() => {
+        setSnackbar({ open: true, message: 'Post deleted successfully.', severity: 'success' });
+        setPosts((prevPosts) =>
+          prevPosts.filter((post) => post.id !== postToDelete)
+        );
+      })
+      .catch((error) => {
+        console.error("Error deleting post:", error);
+        setSnackbar({ open: true, message: 'An error occurred while deleting the post.', severity: 'error' });
+      });
+    setDeleteDialogOpen(false);
   };
 
   const openEditDialog = (postId, currentDescription) => {
@@ -86,7 +92,7 @@ const PostList = () => {
   const handleEditSave = () => {
     PostService.updatePostDescription(currentPostId, editedDescription)
       .then(() => {
-        alert("Description updated successfully.");
+        setSnackbar({ open: true, message: 'Description updated successfully.', severity: 'success' });
         setPosts((prevPosts) =>
           prevPosts.map((post) =>
             post.id === currentPostId
@@ -98,7 +104,7 @@ const PostList = () => {
       })
       .catch((error) => {
         console.error("Error updating post:", error);
-        alert("An error occurred while updating the description.");
+        setSnackbar({ open: true, message: 'An error occurred while updating the description.', severity: 'error' });
       });
   };
 
@@ -118,10 +124,14 @@ const PostList = () => {
     }
   };
 
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
   return (
     <>
       <Box sx={{ p: 3, maxWidth: 600, mx: "auto" }}>
-        <Box sx={{ display: "flex", gap: 1, mb: 3 }}>
+        <Box sx={{ display: "flex", gap: 1, mb: 3, p: 2, borderRadius: 2, background: 'linear-gradient(to right, #f8f9fa, #ffffff)', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
           <TextField
             fullWidth
             variant="outlined"
@@ -154,6 +164,7 @@ const PostList = () => {
             backgroundColor: "#fafafa",
             "&:hover": {
               backgroundColor: "#f0f0f0",
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
             },
             mb: 3,
           }}
@@ -165,7 +176,7 @@ const PostList = () => {
         </Card>
         <Stack spacing={4}>
           {posts.map((post) => (
-            <Card key={post.id} elevation={3} sx={{ borderRadius: 3 }}>
+            <Card key={post.id} elevation={3} sx={{ borderRadius: 3, transition: 'transform 0.2s, box-shadow 0.2s', '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 8px 16px rgba(0,0,0,0.1)' } }}>
               <Stack spacing={1}>
                 <Stack spacing={1} sx={{ position: "relative" }}>
                   {(() => {
@@ -208,6 +219,7 @@ const PostList = () => {
                         variant="contained"
                         onClick={() => handlePrevMedia(post.id)}
                         disabled={(mediaIndexMap[post.id] || 0) === 0}
+                        sx={{ borderRadius: 2, backgroundColor: 'rgba(0,0,0,0.5)', '&:hover': { backgroundColor: 'rgba(0,0,0,0.7)' } }}
                       >
                         ‹
                       </Button>
@@ -221,6 +233,7 @@ const PostList = () => {
                           (mediaIndexMap[post.id] || 0) ===
                           post.mediaUrls.length - 1
                         }
+                        sx={{ borderRadius: 2, backgroundColor: 'rgba(0,0,0,0.5)', '&:hover': { backgroundColor: 'rgba(0,0,0,0.7)' } }}
                       >
                         ›
                       </Button>
@@ -283,9 +296,11 @@ const PostList = () => {
           ))}
         </Stack>
       </Box>
-      <Dialog open={editDialogOpen} onClose={handleDialogClose}>
-        <DialogTitle>Edit Description</DialogTitle>
-        <DialogContent>
+      <Dialog open={editDialogOpen} onClose={handleDialogClose} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ background: 'linear-gradient(to right, #f8f9fa, #ffffff)', color: '#424242', fontWeight: 'bold', borderBottom: '1px solid #e0e0e0' }}>
+          Edit Description
+        </DialogTitle>
+        <DialogContent sx={{ p: 3, background: '#ffffff' }}>
           <TextField
             autoFocus
             margin="dense"
@@ -293,17 +308,45 @@ const PostList = () => {
             type="text"
             fullWidth
             multiline
+            rows={4}
             value={editedDescription}
             onChange={(e) => setEditedDescription(e.target.value)}
+            variant="outlined"
+            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1 } }}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDialogClose}>Cancel</Button>
-          <Button onClick={handleEditSave} variant="contained">
+        <DialogActions sx={{ p: 2, background: '#f8f9fa', borderTop: '1px solid #e0e0e0' }}>
+          <Button onClick={handleDialogClose} sx={{ color: '#424242', '&:hover': { backgroundColor: '#e0e0e0' } }}>
+            Cancel
+          </Button>
+          <Button onClick={handleEditSave} variant="contained" sx={{ background: 'linear-gradient(45deg, #2563eb, #3b82f6)', color: 'white', '&:hover': { background: 'linear-gradient(45deg, #1d4ed8, #2563eb)' } }}>
             Save
           </Button>
         </DialogActions>
       </Dialog>
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ background: 'linear-gradient(to right, #f8f9fa, #ffffff)', color: '#424242', fontWeight: 'bold', borderBottom: '1px solid #e0e0e0' }}>
+          Confirm Delete
+        </DialogTitle>
+        <DialogContent sx={{ p: 3, background: '#ffffff' }}>
+          <Typography variant="body1">
+            Are you sure you want to permanently delete this post?
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, background: '#f8f9fa', borderTop: '1px solid #e0e0e0' }}>
+          <Button onClick={() => setDeleteDialogOpen(false)} sx={{ color: '#424242', '&:hover': { backgroundColor: '#e0e0e0' } }}>
+            Cancel
+          </Button>
+          <Button onClick={confirmDelete} variant="contained" sx={{ background: 'linear-gradient(45deg, #ef5350, #c62828)', color: 'white', '&:hover': { background: 'linear-gradient(45deg, #c62828, #b71c1c)' } }}>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 };
