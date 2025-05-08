@@ -1,5 +1,7 @@
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider, CssBaseline } from '@mui/material';
+import theme from './theme';
 import PostList from './components/Posts/PostList';
 import CreatePost from './components/Posts/CreatePost';
 import React from 'react';
@@ -8,12 +10,15 @@ import CreateLearningProgress from './components/CreateLearningProgress';
 import ViewAllLearningProgress from './components/ViewAllLearningProgress';
 import CreateLearningPlan from './components/CreateLearningPlan';
 import ViewAllPlan from './components/ViewAllPlan';
+import UpdateLearningProgress from './components/UpdateLearningProgress';
 import UpdateLearningPlan from './components/UpdateLearningPlan';
-import UpdateLearningProgress from './components/UpdateLearningProgress'; 
 
 function App() {
   return (
-    <Router>
+
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+     <Router>
       <div style={{ display: 'flex' }}>
          <NavigationBar/>
       <div style={{ marginLeft: 260, flex: 1, width: '100%' }}>
@@ -34,7 +39,10 @@ function App() {
       </Routes>
       </div>
       </div>
-    </Router>
+    </Router> 
+    
+    </ThemeProvider>
+
   );
 }
 
