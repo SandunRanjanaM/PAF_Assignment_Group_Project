@@ -13,6 +13,7 @@ public class Notification {
     private String postId;
     private String message;
     private long timestamp;
+    private boolean isRead;
 
     public Notification() {}
 
@@ -24,6 +25,7 @@ public class Notification {
         this.receiverUserId = receiverUserId;
         this.senderUserId = senderUserId;
         this.timestamp = timestamp;
+        this.isRead = false; // Default to unread
     }
 
     //  Add this to simplify object creation
@@ -33,6 +35,7 @@ public class Notification {
         this.receiverUserId = receiverUserId;
         this.senderUserId = senderUserId;
         this.timestamp = System.currentTimeMillis(); // auto timestamp
+        this.isRead = false; // Default to unread
     }
 
     // Getters and setters...
@@ -82,5 +85,13 @@ public class Notification {
 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public boolean isRead() {
+        return isRead;
+    }
+
+    public void setRead(boolean read) {
+        isRead = read;
     }
 }

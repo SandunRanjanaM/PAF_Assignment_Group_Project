@@ -9,5 +9,3 @@ import org.springframework.stereotype.Repository;
 public interface notificationRepository extends MongoRepository<Notification, String> {
     List<Notification> findByReceiverUserId(String receiverUserId);
 }
-
-

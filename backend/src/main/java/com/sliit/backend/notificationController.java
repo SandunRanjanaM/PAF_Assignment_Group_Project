@@ -4,11 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/notifications")
@@ -27,6 +23,20 @@ public class notificationController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteNotification(@PathVariable String id) {
         notificationService.deleteNotification(id);
+        return ResponseEntity.ok().build();
+    }
+
+    // Endpoint to mark a notification as read
+    @PutMapping("/{id}/read")
+    public ResponseEntity<?> markNotificationAsRead(@PathVariable String id) {
+        notificationService.markNotificationAsRead(id);
+        return ResponseEntity.ok().build();
+    }
+
+    // Endpoint to mark all notifications as read for a user
+    @PutMapping("/{userId}/read-all")
+    public ResponseEntity<?> markAllNotificationsAsRead(@PathVariable String userId) {
+        notificationService.markAllNotificationsAsRead(userId);
         return ResponseEntity.ok().build();
     }
 }
