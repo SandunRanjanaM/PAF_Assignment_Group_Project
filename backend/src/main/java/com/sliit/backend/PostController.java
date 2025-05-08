@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/posts") 
+@RequestMapping("/api/posts") 
 public class PostController {
 
     @Autowired
@@ -65,4 +65,13 @@ public class PostController {
         return updatedPost.map(post -> new ResponseEntity<>(post, HttpStatus.OK))
                       .orElseGet(() -> ResponseEntity.notFound().build());
 }
+
+
+    // 6. Get posts by hashtag
+    @GetMapping("/search")
+    public ResponseEntity<List<Post>> getPostsByHashtag(@RequestParam("hashtag") String hashtag) {
+        List<Post> posts = postService.getPostsByHashtag(hashtag);
+        return new ResponseEntity<>(posts, HttpStatus.OK);
+}
+
 }

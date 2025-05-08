@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CloudinaryConfig {
  
-    @Bean
+    @Bean(name = "posts")
     public Cloudinary cloudinary() {
         return new Cloudinary(ObjectUtils.asMap(
             "cloud_name", "dqnrdlpcn",
