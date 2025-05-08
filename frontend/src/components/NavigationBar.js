@@ -19,7 +19,7 @@ const NavigationBar = () => {
         </li>
         <li className="nav-item">
           <FaClipboardList className="nav-icon" />
-          <span>Assignment</span>
+          <span>Comments & Discussions</span>
         </li>
         <li className="nav-item">
           <FaCalendarAlt className="nav-icon" />

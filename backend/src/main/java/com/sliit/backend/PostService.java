@@ -3,6 +3,7 @@ package com.sliit.backend;
 //import com.sliit.backend.Post;
 //import com.sliit.backend.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,6 +27,7 @@ public class PostService {
     private PostRepository postRepository;
 
     @Autowired
+    @Qualifier("posts")
     private Cloudinary cloudinary;
 
     // 1. Create a new post
