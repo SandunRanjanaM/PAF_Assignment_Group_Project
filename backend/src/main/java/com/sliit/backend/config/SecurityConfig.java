@@ -14,7 +14,7 @@ public class SecurityConfig {
             .cors(cors -> {}) // modern way; empty lambda enables default CORS handling via WebMvcConfigurer
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/v1/users/**").permitAll()
+                .requestMatchers("/api/v1/users/**", "/api/posts/**","/api/LearningProgress/**","/api/LearningPlan/**","/api/comments/**","/api/notifications/**").permitAll()
                 .anyRequest().authenticated()
             )
             .logout(logout -> logout
