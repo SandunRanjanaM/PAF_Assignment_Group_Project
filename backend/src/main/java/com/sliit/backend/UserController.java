@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sliit.backend.dto.LoginRequest;
 
 import java.io.IOException;
 import java.util.List;
@@ -19,6 +20,8 @@ public class UserController {
 
     @Autowired
     private UserService service;
+    
+
 
     @Autowired
     private ImageUploadService imageUploadService;
@@ -63,13 +66,21 @@ public class UserController {
 
     // UPDATE user
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable String id, @RequestBody User user) {
-        User updatedUser = service.updateUser(id, user);
-        if (updatedUser == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<User> updateUser(@PathVariable String id, @RequestBody User updatedData) {
+        Optional<User> optionalUser = service.findUserById(id);
+        if (optionalUser.isEmpty()) {
+            return ResponseEntity.notFound().build();
         }
-        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+
+        User updatedUser = service.updateUser(id, updatedData);
+        if (updatedUser == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        return ResponseEntity.ok(updatedUser);
     }
+
+    
 
     // DELETE user
     @DeleteMapping("/{id}")
@@ -93,6 +104,67 @@ public class UserController {
 
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
+
+    @PutMapping("/{followerId}/follow/{followeeId}")
+    public ResponseEntity<?> followUser(@PathVariable String followerId, @PathVariable String followeeId) {
+        boolean success = service.followUser(followerId, followeeId);
+        if (success) {
+            return ResponseEntity.ok("Followed successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Follow action failed");
+        }
+    }
+
+    @GetMapping("/{id}/followers")
+    public ResponseEntity<List<User>> getFollowers(@PathVariable String id) {
+        Optional<User> userOpt = service.findUserById(id);
+        if (userOpt.isPresent()) {
+            List<String> followerIds = userOpt.get().getFollowers();
+            List<User> followers = service.findUsersByIds(followerIds);
+            return ResponseEntity.ok(followers);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/{id}/following")
+    public ResponseEntity<List<User>> getFollowing(@PathVariable String id) {
+        Optional<User> userOpt = service.findUserById(id);
+        if (userOpt.isPresent()) {
+            List<String> followingIds = userOpt.get().getFollowing();
+            List<User> following = service.findUsersByIds(followingIds);
+            return ResponseEntity.ok(following);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+    @PutMapping("/{id}/skills")
+    public ResponseEntity<?> updatePreferredSkills(
+            @PathVariable String id,
+            @RequestBody List<String> skills) {
+
+        Optional<User> userOpt = service.findUserById(id);
+        if (userOpt.isPresent()) {
+            User updatedUser = service.updatePreferredSkills(id, skills);
+            return ResponseEntity.ok(updatedUser);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+
+      
+        
+    }
+
+    @GetMapping("/{id}/suggested")
+    public ResponseEntity<List<User>> suggestUsersBySkills(@PathVariable String id) {
+        List<User> suggestions = service.suggestUsersBySkills(id);
+        return ResponseEntity.ok(suggestions);
+    }
+
+
+
+
+
     
 
 }

@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 public class User {
     @Id
-    private String id; // ✅ Changed from ObjectId to String
+    private String id;
 
     private String userID;
     private String username;
@@ -27,14 +26,18 @@ public class User {
 
     private List<String> followers = new ArrayList<>();
     private List<String> following = new ArrayList<>();
+    private List<String> preferredSkills = new ArrayList<>();
 
+    
+    //private String authProvider;
 
-    public User(String userID, String username, String email, String password, String bio, String profilePicture) {
+    public User(String userID, String username, String email, String password, String bio, String profilePicture, String authProvider) {
         this.userID = userID;
         this.username = username;
         this.email = email;
         this.password = password;
         this.bio = bio;
         this.profilePicture = profilePicture;
+       // this.authProvider = authProvider;
     }
 }
