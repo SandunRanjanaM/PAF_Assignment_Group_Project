@@ -1,5 +1,5 @@
 import './App.css';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import theme from './theme';
 import React from 'react';
@@ -27,53 +27,56 @@ import CreateComment from './components/CreateComment';
 import NotificationViewer from './components/NotificationViewer';
 import ViewCommentsByPost from './components/ViewCommentsByPost';
 
-const App = () => {
+const AppContent = () => {
+  const location = useLocation();
+  const showNavBar = location.pathname !== '/' && location.pathname !== '/login';
+
   return (
+    <div style={{ display: 'flex' }}>
+      {showNavBar && <NavigationBar />}
+      <div style={{ marginLeft: showNavBar ? 260 : 0, flex: 1, width: '100%' }}>
+        <Routes>
+          <Route path='/posts' element={<PostList/>}/>
+          <Route path='/posts/create' element={<CreatePost/>}/>
 
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-     <Router>
-      <div style={{ display: 'flex' }}>
-         <NavigationBar/>
-      <div style={{ marginLeft: 260, flex: 1, width: '100%' }}>
-      <Routes>
-
-        <Route path='/posts' element={<PostList/>}/>
-        <Route path='/posts/create' element={<CreatePost/>}/>
-
-
-        <Route path="/create-progress" element={<CreateLearningProgress />} /> 
-        <Route path="/progresses" element={<ViewAllLearningProgress />} />
-        <Route path="/create-plan" element={<CreateLearningPlan />} />
-        <Route path="/view-all-plans" element={<ViewAllPlan />} />
-        <Route path="/update-plan/:id" element={<UpdateLearningPlan />} />
-        <Route path="/update-progress/:progressId" element={<UpdateLearningProgress />} /> 
-        <Route path="/update-plan-by-user/:userId/:progressName" element={<UpdateLearningPlan />} />
+          <Route path="/create-progress" element={<CreateLearningProgress />} /> 
+          <Route path="/progresses" element={<ViewAllLearningProgress />} />
+          <Route path="/create-plan" element={<CreateLearningPlan />} />
+          <Route path="/view-all-plans" element={<ViewAllPlan />} />
+          <Route path="/update-plan/:id" element={<UpdateLearningPlan />} />
+          <Route path="/update-progress/:progressId" element={<UpdateLearningProgress />} /> 
+          <Route path="/update-plan-by-user/:userId/:progressName" element={<UpdateLearningPlan />} />
           
-        <Route path="/" element={<AuthLandingPage />} />
-        <Route path="/login" element={<UserLogin />} />
-        <Route path="/register" element={<UserRegister />} /> 
-        <Route path="/Dashboard" element={<UserProfile />} />
-        <Route path="/profile" element={<UserProfile />} />
-        <Route path="/user/:id" element={<PublicUserProfile />} />
-        <Route path="/update-profile" element={<UpdateProfile />} />
-        <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
+          <Route path="/" element={<AuthLandingPage />} />
+          <Route path="/login" element={<UserLogin />} />
+          <Route path="/register" element={<UserRegister />} /> 
+          <Route path="/Dashboard" element={<UserProfile />} />
+          <Route path="/profile" element={<UserProfile />} />
+          <Route path="/user/:id" element={<PublicUserProfile />} />
+          <Route path="/update-profile" element={<UpdateProfile />} />
+          <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
 
-
-        <Route path="/CreateComment" element={<CreateComment />} />
-        <Route path="/NotificationViewer" element={<NotificationViewer />} />
-        <Route path="/ViewCommentsByPost/:postId" element={<ViewCommentsByPost />} />
+          <Route path="/CreateComment" element={<CreateComment />} />
+          <Route path="/NotificationViewer" element={<NotificationViewer />} />
+          <Route path="/ViewCommentsByPost/:postId" element={<ViewCommentsByPost />} />
 
 
 
 
       </Routes>
       </div>
-      </div>
-    </Router> 
-    
-    </ThemeProvider>
+    </div>
+  );
+};
 
+const App = () => {
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Router>
+        <AppContent />
+      </Router> 
+    </ThemeProvider>
   );
 };
 
