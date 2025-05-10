@@ -10,8 +10,10 @@ import {
     Grid,
     Paper,
     TextField,
-    Typography
+    Typography,
+    Divider
 } from '@mui/material';
+import GoogleIcon from '@mui/icons-material/Google';
 
 const UserLogin = ({ embed }) => {
     const [credentials, setCredentials] = useState({ email: '', password: '' });
@@ -34,6 +36,10 @@ const UserLogin = ({ embed }) => {
             console.error("Login failed:", error.response?.data || error.message);
             alert("Invalid credentials.");
         }
+    };
+
+    const handleGoogleLogin = () => {
+        window.location.href = 'http://localhost:5021/oauth2/authorization/google';
     };
 
     return (
@@ -87,6 +93,31 @@ const UserLogin = ({ embed }) => {
                                     sx={{ fontWeight: 'bold' }}
                                 >
                                     Login
+                                </Button>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Divider sx={{ my: 2 }}>
+                                    <Typography variant="body2" color="text.secondary">
+                                        OR
+                                    </Typography>
+                                </Divider>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Button
+                                    variant="outlined"
+                                    fullWidth
+                                    startIcon={<GoogleIcon />}
+                                    onClick={handleGoogleLogin}
+                                    sx={{
+                                        color: '#757575',
+                                        borderColor: '#757575',
+                                        '&:hover': {
+                                            borderColor: '#424242',
+                                            backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                                        }
+                                    }}
+                                >
+                                    Sign in with Google
                                 </Button>
                             </Grid>
                         </Grid>
