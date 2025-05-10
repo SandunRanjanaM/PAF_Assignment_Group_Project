@@ -119,8 +119,8 @@ const ViewAllPlan = () => {
           </Stack>
           <Button
             variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => navigate('/create-plan')}
+            // startIcon={<AddIcon />}
+            onClick={() => navigate('/progresses')}
             sx={{
               borderRadius: 2,
               textTransform: 'none',
@@ -132,7 +132,7 @@ const ViewAllPlan = () => {
               },
             }}
           >
-            Create New Plan
+            View All Progresses
           </Button>
         </Stack>
 
@@ -443,7 +443,7 @@ const ViewAllPlan = () => {
                               <EditIcon />
                             </IconButton>
                           </Tooltip>
-                          <Tooltip title="Share Plan">
+                          {/* <Tooltip title="Share Plan">
                             <IconButton
                               onClick={() => handleShare(plan)}
                               sx={{
@@ -456,7 +456,7 @@ const ViewAllPlan = () => {
                             >
                               <ShareIcon />
                             </IconButton>
-                          </Tooltip>
+                          </Tooltip> */}
                           <Tooltip title="Delete Plan">
                             <IconButton
                               color="error"

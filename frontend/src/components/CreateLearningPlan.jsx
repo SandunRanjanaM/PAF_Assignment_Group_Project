@@ -226,7 +226,7 @@ const CreateLearningPlan = () => {
               <Stack spacing={3}>
                 <Paper elevation={0} sx={{ p: 3, borderRadius: 2, bgcolor: 'background.paper' }}>
                   <Stack spacing={2}>
-                    <TextField
+                    {/* <TextField
                       fullWidth
                       label="User ID"
                       name="userId"
@@ -237,7 +237,7 @@ const CreateLearningPlan = () => {
                           bgcolor: 'background.default',
                         },
                       }}
-                    />
+                    /> */}
                     <TextField
                       fullWidth
                       label="Progress Name"

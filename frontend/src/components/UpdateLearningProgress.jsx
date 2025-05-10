@@ -194,7 +194,7 @@ const UpdateLearningProgress = () => {
             <Stack spacing={3}>
               <Paper elevation={0} sx={{ p: 3, borderRadius: 2, bgcolor: 'background.paper' }}>
                 <Stack spacing={2}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  {/* <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <PersonIcon sx={{ color: 'primary.main' }} />
                     <TextField
                       label="User ID"
@@ -207,7 +207,7 @@ const UpdateLearningProgress = () => {
                         },
                       }}
                     />
-                  </Box>
+                  </Box> */}
 
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <TitleIcon sx={{ color: 'primary.main' }} />
@@ -217,6 +217,7 @@ const UpdateLearningProgress = () => {
                       value={progressData.progressName}
                       onChange={handleChange}
                       fullWidth
+                      required
                       sx={{
                         '& .MuiOutlinedInput-root': {
                           '&:hover fieldset': {
@@ -254,6 +255,7 @@ const UpdateLearningProgress = () => {
                       value={progressData.description}
                       onChange={handleChange}
                       fullWidth
+                      required
                       multiline
                       rows={3}
                       sx={{
@@ -274,6 +276,7 @@ const UpdateLearningProgress = () => {
                       value={progressData.newSkills}
                       onChange={handleChange}
                       fullWidth
+                      required
                       sx={{
                         '& .MuiOutlinedInput-root': {
                           '&:hover fieldset': {
@@ -292,6 +295,7 @@ const UpdateLearningProgress = () => {
                       value={progressData.resources}
                       onChange={handleChange}
                       fullWidth
+                      required
                       sx={{
                         '& .MuiOutlinedInput-root': {
                           '&:hover fieldset': {

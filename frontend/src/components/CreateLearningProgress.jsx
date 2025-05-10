@@ -163,7 +163,7 @@ const CreateLearningProgress = () => {
             <Stack spacing={3}>
               <Paper elevation={0} sx={{ p: 3, borderRadius: 2, bgcolor: 'background.paper' }}>
                 <Stack spacing={2}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  {/* <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <PersonIcon sx={{ color: 'primary.main' }} />
                     <TextField
                       fullWidth
@@ -180,7 +180,7 @@ const CreateLearningProgress = () => {
                         },
                       }}
                     />
-                  </Box>
+                  </Box> */}
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <TitleIcon sx={{ color: 'primary.main' }} />
                     <TextField

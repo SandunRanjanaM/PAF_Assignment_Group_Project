@@ -464,6 +464,7 @@ const UpdateLearningPlan = () => {
                     value={planData.durationValue || ''}
                     onChange={handleChange}
                     fullWidth
+                    required
                     inputProps={{ min: 1 }}
                     error={!!errors.durationValue}
                     helperText={errors.durationValue}

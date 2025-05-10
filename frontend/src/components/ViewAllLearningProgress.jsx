@@ -185,7 +185,7 @@ const ViewAllLearningProgress = () => {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/create-progress')}
             sx={{
               borderRadius: 2,
               textTransform: 'none',
@@ -223,7 +223,7 @@ const ViewAllLearningProgress = () => {
               <Button
                 variant="outlined"
                 startIcon={<AddIcon />}
-                onClick={() => navigate('/')}
+                onClick={() => navigate('/create-progress')}
                 sx={{
                   borderRadius: 2,
                   textTransform: 'none',
@@ -307,12 +307,12 @@ const ViewAllLearningProgress = () => {
                                       }}
                                     >
                                       <Stack spacing={1}>
-                                        <Box display="flex" alignItems="center">
+                                        {/* <Box display="flex" alignItems="center">
                                           <PersonIcon fontSize="small" sx={{ mr: 1, color: 'primary.main' }} />
                                           <Typography variant="body2" color="text.primary">
                                             <strong>User ID:</strong> {progress.userId}
                                           </Typography>
-                                        </Box>
+                                        </Box> */}
 
                                         <Box display="flex" alignItems="center">
                                           <TitleIcon fontSize="small" sx={{ mr: 1, color: 'primary.main' }} />

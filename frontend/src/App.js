@@ -39,14 +39,14 @@ const AppContent = () => {
           <Route path='/posts' element={<PostList/>}/>
           <Route path='/posts/create' element={<CreatePost/>}/>
 
-          <Route path="/sandun" element={<CreateLearningProgress />} /> 
+          <Route path="/create-progress" element={<CreateLearningProgress />} /> 
           <Route path="/progresses" element={<ViewAllLearningProgress />} />
           <Route path="/create-plan" element={<CreateLearningPlan />} />
           <Route path="/view-all-plans" element={<ViewAllPlan />} />
           <Route path="/update-plan/:id" element={<UpdateLearningPlan />} />
           <Route path="/update-progress/:progressId" element={<UpdateLearningProgress />} /> 
           <Route path="/update-plan-by-user/:userId/:progressName" element={<UpdateLearningPlan />} />
-            
+          
           <Route path="/" element={<AuthLandingPage />} />
           <Route path="/login" element={<UserLogin />} />
           <Route path="/register" element={<UserRegister />} /> 
@@ -59,7 +59,11 @@ const AppContent = () => {
           <Route path="/CreateComment" element={<CreateComment />} />
           <Route path="/NotificationViewer" element={<NotificationViewer />} />
           <Route path="/ViewCommentsByPost/:postId" element={<ViewCommentsByPost />} />
-        </Routes>
+
+
+
+
+      </Routes>
       </div>
     </div>
   );
