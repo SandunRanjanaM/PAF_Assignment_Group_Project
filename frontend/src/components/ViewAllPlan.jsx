@@ -108,7 +108,7 @@ const ViewAllPlan = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+    <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
       <Paper elevation={0} sx={{ p: 4, borderRadius: 4, bgcolor: 'background.default' }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={4}>
           <Stack direction="row" alignItems="center" spacing={2}>
@@ -172,7 +172,7 @@ const ViewAllPlan = () => {
         ) : (
           <Grid container spacing={4}>
             {plans.map((plan) => (
-              <Grid item xs={12} md={6} lg={4} key={plan.id}>
+              <Grid item xs={12}  key={plan.id}>
                 <Zoom in={true}>
                   <Card
                     elevation={0}

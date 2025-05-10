@@ -1,39 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import {
   Button,
-  TextField,
   Paper,
   Typography,
   List,
   ListItem,
   ListItemText,
-  IconButton
+  IconButton,
+  TextField,
+  Box
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CommentService from '../services/CommentService';
-
-const ViewCommentsByPost = () => {
-  const [postId, setPostId] = useState('');
+ 
+const ViewCommentsByPost = ({ postId }) => {
   const [comments, setComments] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState('');
-
+ 
   useEffect(() => {
     if (postId) {
       fetchComments();
     }
   }, [postId]);
-
+ 
   const fetchComments = async () => {
     try {
-      const res = await CommentService.getCommentsByPostId(postId);
-      setComments(res.data);
+      const response = await CommentService.getCommentsByPostId(postId);
+      setComments(response.data || []);
     } catch (err) {
       console.error('Error fetching comments:', err);
     }
   };
-
+ 
   const handleDelete = async (id) => {
     try {
       await CommentService.deleteComment(id);
@@ -42,7 +42,7 @@ const ViewCommentsByPost = () => {
       console.error('Delete failed:', err);
     }
   };
-
+ 
   const handleEdit = async (id) => {
     try {
       await CommentService.updateComment(id, { commentText: editText });
@@ -56,54 +56,78 @@ const ViewCommentsByPost = () => {
       console.error('Update failed:', err);
     }
   };
-
-  return (
-    <Paper elevation={3} style={{ padding: 20, maxWidth: 600, margin: '20px auto' }}>
-      <Typography variant="h6" gutterBottom>
-        View Comments by Post ID
+ 
+  if (comments.length === 0) {
+    return (
+      <Typography color="textSecondary" align="center">
+        No comments yet. Be the first to comment!
       </Typography>
-      <TextField
-        label="Enter Post ID"
-        fullWidth
-        margin="normal"
-        value={postId}
-        onChange={(e) => setPostId(e.target.value)}
-      />
-      <Button variant="contained" onClick={fetchComments} sx={{ mt: 1 }}>
-        Load Comments
-      </Button>
-
-      <List>
-        {comments.map(comment => (
-          <ListItem key={comment.id} divider>
+    );
+  }
+ 
+  return (
+    <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
+      {comments.map(comment => (
+        <ListItem
+          key={comment.id}
+          divider
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'stretch',
+            '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.04)' }
+          }}
+        >
+          <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', mb: editingId === comment.id ? 2 : 0 }}>
             {editingId === comment.id ? (
               <>
                 <TextField
                   fullWidth
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
+                  size="small"
+                  sx={{ mr: 1 }}
                 />
-                <Button onClick={() => handleEdit(comment.id)}>Save</Button>
+                <Button
+                  onClick={() => handleEdit(comment.id)}
+                  variant="contained"
+                  size="small"
+                  sx={{ minWidth: 'auto' }}
+                >
+                  Save
+                </Button>
               </>
             ) : (
               <>
-                <ListItemText primary={comment.commentText} />
-                <IconButton onClick={() => {
-                  setEditingId(comment.id);
-                  setEditText(comment.commentText);
-                }}>
-                  <EditIcon />
-                </IconButton>
-                <IconButton onClick={() => handleDelete(comment.id)}>
-                  <DeleteIcon />
-                </IconButton>
+                <ListItemText
+                  primary={comment.commentText}
+                  secondary={`Posted by: ${comment.userId}`}
+                  sx={{ flex: 1 }}
+                />
+                <Box>
+                  <IconButton
+                    onClick={() => {
+                      setEditingId(comment.id);
+                      setEditText(comment.commentText);
+                    }}
+                    size="small"
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    onClick={() => handleDelete(comment.id)}
+                    size="small"
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </Box>
               </>
             )}
-          </ListItem>
-        ))}
-      </List>
-    </Paper>
+          </Box>
+        </ListItem>
+      ))}
+    </List>
   );
 };
-
+ 
 export default ViewCommentsByPost;

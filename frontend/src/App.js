@@ -26,6 +26,7 @@ import OAuth2RedirectHandler from './components/OAuth2RedirectHandler';
 import CreateComment from './components/CreateComment';
 import NotificationViewer from './components/NotificationViewer';
 import ViewCommentsByPost from './components/ViewCommentsByPost';
+import CommentSection from './components/CommentSection';
 
 const AppContent = () => {
   const location = useLocation();
@@ -56,9 +57,10 @@ const AppContent = () => {
           <Route path="/update-profile" element={<UpdateProfile />} />
           <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
 
-          <Route path="/CreateComment" element={<CreateComment />} />
+          
+          <Route path="/comments/:postId" element={<CommentSection />} />
           <Route path="/NotificationViewer" element={<NotificationViewer />} />
-          <Route path="/ViewCommentsByPost/:postId" element={<ViewCommentsByPost />} />
+          <Route path="/notifications/:userId" element={<NotificationViewer />} />
 
 
 

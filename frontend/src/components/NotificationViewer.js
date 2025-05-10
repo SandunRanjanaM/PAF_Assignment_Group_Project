@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Circle as UnreadIcon, CheckCircle as ReadIcon, Check as CheckIcon, Delete as DeleteIcon } from '@mui/icons-material';
-import { formatDistanceToNow, isToday, isYesterday, format } from 'date-fns';
+import { formatDistanceToNow, isToday, isYesterday } from 'date-fns';
 import './NotificationViewer.css';
-
+ 
 import {
-  TextField,
-  Button,
   Paper,
   Typography,
   List,
@@ -13,60 +11,66 @@ import {
   ListItemText,
   Divider,
   IconButton,
-  Box
+  Box,
+  Button
 } from '@mui/material';
-
+ 
 import NotificationService from '../services/NotificationService';
-
+ 
 const NotificationViewer = () => {
-  const [userId, setUserId] = useState('');
   const [notifications, setNotifications] = useState([]);
   const [error, setError] = useState('');
-
-  // Function to format the timestamp to a friendly date
+  const [loading, setLoading] = useState(true);
+  const userId = "12345"; // Hardcoded user ID as requested
+ 
+  useEffect(() => {
+    fetchNotifications();
+  }, []); // Fetch notifications when component mounts
+ 
   const formatTimeAgo = (timestamp) => {
     if (!timestamp || isNaN(timestamp)) {
       return 'Invalid Date';
     }
-
+ 
     const date = new Date(timestamp);
     if (isNaN(date)) {
       return 'Invalid Date';
     }
-
+ 
     // If less than 1 minute ago
     const diffInSeconds = (new Date() - date) / 1000;
     if (diffInSeconds < 60) {
       return 'Just now';
     }
-
+ 
     // If today or yesterday
     if (isToday(date)) {
       return formatDistanceToNow(date, { addSuffix: true });
     } else if (isYesterday(date)) {
       return 'Yesterday';
     }
-
+ 
     // If more than yesterday, show relative time
     return formatDistanceToNow(date, { addSuffix: true });
   };
-
-  const handleFetchNotifications = async () => {
+ 
+  const fetchNotifications = async () => {
     try {
+      setLoading(true);
       const data = await NotificationService.getNotifications(userId);
-      console.log('Notifications Data:', data); // Debugging the response data
       setNotifications(data);
       setError('');
     } catch (err) {
       setError('Failed to fetch notifications');
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
-
+ 
   const handleMarkAsRead = async (notificationId) => {
     try {
       await NotificationService.markNotificationAsRead(notificationId);
-      // Update the local state to reflect the change
       setNotifications(notifications.map(notif =>
         notif.id === notificationId ? { ...notif, isRead: true } : notif
       ));
@@ -74,66 +78,53 @@ const NotificationViewer = () => {
       console.error('Failed to mark notification as read:', err);
     }
   };
-
+ 
   const handleDelete = async (notificationId) => {
     try {
       await NotificationService.deleteNotification(notificationId);
-      // Update the local state to remove the notification
       setNotifications(notifications.filter(notif => notif.id !== notificationId));
     } catch (err) {
       console.error('Failed to delete notification:', err);
     }
   };
-
+ 
   const handleMarkAllAsRead = async () => {
     try {
       await NotificationService.markAllNotificationsAsRead(userId);
-      // Delete all notifications after marking them as read
-      const deletePromises = notifications.map(notif => NotificationService.deleteNotification(notif.id));
-      await Promise.all(deletePromises);
-      // Update the local state to remove all notifications
-      setNotifications([]);
+      setNotifications(notifications.map(notif => ({ ...notif, isRead: true })));
     } catch (err) {
       console.error('Failed to mark all notifications as read:', err);
     }
   };
-
+ 
+  if (loading) {
+    return (
+      <Paper className="notification-container">
+        <Typography>Loading notifications...</Typography>
+      </Paper>
+    );
+  }
+ 
   return (
     <Paper className="notification-container">
       <Typography variant="h6" className="notification-header">
-        View Notifications
+        Notifications
       </Typography>
-      <TextField
-        fullWidth
-        label="Enter User ID"
-        variant="outlined"
-        value={userId}
-        onChange={(e) => setUserId(e.target.value)}
-        className="notification-input"
-      />
-      <Box className="notification-buttons">
-        <Button variant="contained" color="primary" onClick={handleFetchNotifications}>
-          Fetch Notifications
-        </Button>
-        {notifications.length > 0 && (
+ 
+      {notifications.length > 0 && (
+        <Box className="notification-buttons">
           <Button variant="outlined" color="primary" onClick={handleMarkAllAsRead}>
             Mark All as Read
           </Button>
-        )}
-      </Box>
-
-      {error && (
-        <Typography className="error-message">
-          {error}
-        </Typography>
+        </Box>
       )}
-
-      {notifications.length === 0 && !error && (
+ 
+      {notifications.length === 0 && (
         <Typography className="empty-state">
           No notifications available.
         </Typography>
       )}
-
+ 
       <List className="notification-list">
         {notifications.map((notif, index) => (
           <div key={index}>
@@ -196,5 +187,5 @@ const NotificationViewer = () => {
     </Paper>
   );
 };
-
+ 
 export default NotificationViewer;

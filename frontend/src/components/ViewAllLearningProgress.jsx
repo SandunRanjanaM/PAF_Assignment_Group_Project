@@ -173,8 +173,8 @@ const ViewAllLearningProgress = () => {
   }
 
   return (
-    <Container sx={{ mt: 4, mb: 4 }}>
-      <Paper elevation={0} sx={{ p: 4, borderRadius: 4, bgcolor: 'background.default' }}>
+    <Container maxWidth ='md' sx={{ mt: 4, mb: 4 }}>
+      <Paper elevation={0} sx={{ p: 3, borderRadius: 4, bgcolor: 'background.default' }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={4}>
           <Stack direction="row" alignItems="center" spacing={2}>
             <TrophyIcon sx={{ fontSize: 40, color: 'primary.main' }} />
@@ -238,7 +238,7 @@ const ViewAllLearningProgress = () => {
           <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="progresses" direction="horizontal">
               {(provided) => (
-                <Grid container spacing={3} {...provided.droppableProps} ref={provided.innerRef}>
+                <Grid container spacing={2} {...provided.droppableProps} ref={provided.innerRef}>
                   {progresses.map((progress, index) => {
                     const key = `${progress.userId}_${progress.progressName}`;
                     const existingPlan = plansMap[key];
@@ -247,7 +247,7 @@ const ViewAllLearningProgress = () => {
                     return (
                       <Draggable draggableId={progress.id} index={index} key={progress.id}>
                         {(provided) => (
-                          <Grid item xs={12} sm={6} md={4} ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                          <Grid item xs={12}  ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
                             <Zoom in={true}>
                               <Card
                                 elevation={0}

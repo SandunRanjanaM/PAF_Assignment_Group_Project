@@ -27,7 +27,7 @@ const NavigationBar = () => {
         <li className={`nav-item ${location.pathname === '/NotificationViewer' ? 'active' : ''}`}>
           <Link to="/NotificationViewer" className="nav-link">
             <FaClipboardList className="nav-icon" />
-            <span>Comments & Discussions</span>
+            <span>Notifications</span>
           </Link>
         </li>
         <li className={`nav-item ${location.pathname === '/profile' ? 'active' : ''}`}>

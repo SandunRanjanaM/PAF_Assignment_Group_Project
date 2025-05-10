@@ -1,9 +1,9 @@
 .navigation-bar {
     width: 260px;
     min-height: 100vh;
-    background: #fafafa;
-    border-radius: 0 10px 10px 0;
-    box-shadow: 0 2px 5px , 0 0 0 3px #f5f5f5;
+    background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 0 16px 16px 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     padding: 32px 0 24px 0;
     display: flex;
     flex-direction: column;
@@ -11,47 +11,106 @@
     top: 0;
     left: 0;
     z-index: 100;
-  }
-  
-  .nav-header {
+    transition: all 0.3s ease;
+}
+
+.nav-header {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 40px;
-  }
-  
-  .nav-logo {
-    font-size: 1.8rem;
-    font-weight: 700;
+    margin-bottom: 48px;
+    padding: 0 24px;
+}
+
+.nav-logo {
+    font-size: 2rem;
+    font-weight: 800;
     color: #0d47a1;
-    letter-spacing: 1px;
-  }
-  
-  .nav-list {
+    letter-spacing: 1.5px;
+    text-transform: capitalize;
+}
+
+.nav-list {
     list-style: none;
     padding: 0;
     margin: 0;
     flex: 1;
-  }
-  
-  .nav-item {
+}
+
+.nav-item {
     display: flex;
     align-items: center;
-    padding: 14px 32px;
+    padding: 12px 24px;
     font-size: 1.1rem;
-    color: #424242;
-    border-radius: 8px 0 0 8px;
-    margin-bottom: 8px;
+    color: #546e7a;
+    border-radius: 12px 0 0 12px;
+    margin: 16px 16px;
     cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-  }
-  
-  .nav-item.active, .nav-item:hover {
-    background: #e3f0ff;
-    color: #42a5f5;
-  }
-  
-  .nav-icon {
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.nav-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 0;
+    background: #42a5f5;
+    border-radius: 0 4px 4px 0;
+    transition: height 0.3s ease;
+}
+
+.nav-item:hover::before,
+.nav-item.active::before {
+    height: 70%;
+}
+
+.nav-item.active {
+    background: rgba(66, 165, 245, 0.08);
+    color: #0d47a1;
+    font-weight: 600;
+}
+
+.nav-item:hover {
+    background: rgba(66, 165, 245, 0.05);
+    color: #0d47a1;
+    transform: translateX(4px);
+}
+
+.nav-icon {
     margin-right: 16px;
-    font-size: 1.3rem;
-  } 
+    font-size: 1.4rem;
+    transition: transform 0.3s ease;
+}
+
+.nav-item:hover .nav-icon {
+    transform: scale(1.1);
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    width: 100%;
+    padding: 8px;
+}
+
+.nav-link:hover {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* Add responsive hover effect for mobile devices */
+@media (hover: none) {
+    .nav-item:hover {
+        transform: none;
+    }
+    
+    .nav-item:hover .nav-icon {
+        transform: none;
+    }
+} 

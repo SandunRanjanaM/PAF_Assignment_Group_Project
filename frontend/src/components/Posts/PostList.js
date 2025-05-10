@@ -405,6 +405,7 @@ const PostList = () => {
                           backgroundColor: alpha('#4caf50', 0.1),
                         }
                       }}
+                      onClick={() => navigate(`/comments/${post.id}`)}
                     >
                       <CommentIcon fontSize="small" />
                     </IconButton>
