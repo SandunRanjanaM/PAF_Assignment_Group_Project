@@ -149,9 +149,9 @@ const NotificationViewer = () => {
                     <Typography className="notification-meta">
                       From: {notif.senderUserId || 'Unknown'}
                     </Typography>
-                    <Typography className="notification-meta">
+                    {/* <Typography className="notification-meta">
                       Post ID: {notif.postId}
-                    </Typography>
+                    </Typography> */}
                     <Typography className="notification-date">
                       {formatTimeAgo(notif.date || notif.timestamp)}
                     </Typography>

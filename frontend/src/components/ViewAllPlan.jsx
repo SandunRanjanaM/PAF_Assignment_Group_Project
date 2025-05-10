@@ -234,9 +234,9 @@ const ViewAllPlan = () => {
                           }}
                         >
                           <Stack spacing={1}>
-                            <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                            {/* <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
                               <strong>User ID:</strong> {plan.userId}
-                            </Typography>
+                            </Typography> */}
                             <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
                               <strong>Created:</strong> {new Date(plan.createdAt).toLocaleString()}
                             </Typography>

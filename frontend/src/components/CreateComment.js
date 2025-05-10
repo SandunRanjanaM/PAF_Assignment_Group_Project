@@ -15,7 +15,7 @@ const CreateComment = () => {
     const newComment = {
       commentText: commentText,
       postId: postId,
-      userId: "user789", // This will be the sender ID in the notification
+      userId: "sandun", // This will be the sender ID in the notification
       receiverUserId: "12345" // This ensures notification goes to user 12345
     };
  
